@@ -63,7 +63,7 @@ export default function Blog() {
       <Navbar />
       <main className="flex-1 max-w-7xl mx-auto py-12 px-4">
         <h1 className="text-4xl font-extrabold text-gray-900 mb-10 text-center">
-          Le Blog MAO
+          Categories du Blog MAOlogie 
         </h1>
         {/* Filtres catégories */}
         <div className="flex flex-wrap justify-center gap-3 mb-10">

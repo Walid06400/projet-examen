@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, usePage } from "@inertiajs/react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -61,6 +61,28 @@ export default function BlogArticle({ slug }) {
   // Récupère le slug passé par la route Inertia
   // (Si tu utilises usePage() : const { slug } = usePage().props;)
   const article = allArticles.find((a) => a.slug === slug);
+
+
+  // Mock des commentaires
+  const [comments, setComments] = useState([
+    { author: "Alice", content: "Super article, merci !", date: "2025-06-01" },
+    { author: "Bob", content: "Très clair, j’attends la suite.", date: "2025-06-02" },
+  ]);
+  const [newComment, setNewComment] = useState("");
+
+  const handleComment = (e) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+    setComments([
+      ...comments,
+      {
+        author: "Vous",
+        content: newComment,
+        date: new Date().toLocaleDateString("fr-FR"),
+      },
+    ]);
+    setNewComment("");
+  };
 
   if (!article) {
     return (

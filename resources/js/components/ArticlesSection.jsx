@@ -65,6 +65,9 @@ const ArticlesSection = () => (
         <Card key={i} {...a} type="article" />
       ))}
     </div>
+    </section>
+    );
+    export default ArticlesSection;
     {/* CATEGORIES */}
     {/* <div className="w-full px-0 py-10">
       <h2 className="text-3xl font-extrabold text-gray-900 mb-10 text-center tracking-tight">
@@ -74,9 +77,6 @@ const ArticlesSection = () => (
         {categories.map((c, i) => (
           <Card key={i} {...c} type="category" /> */}
         {/* ))} */}
-        </section>
   //</div>
     //</div>
-);
 
-export default ArticlesSection;

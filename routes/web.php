@@ -16,15 +16,17 @@ Route::get('/blog', function () {
     return Inertia::render('Blog');
 })->name('blog');
 
-// Article individuel
-Route::get('/blog/{slug}', function ($slug) {
-    return Inertia::render('BlogArticle', ['slug' => $slug]);
-})->name('blog.article');
 
 // Liste d'articles par catégorie
 Route::get('/blog/categorie/{slug}', function ($slug) {
     return Inertia::render('BlogCategory', ['slug' => $slug]);
 })->name('blog.category');
+
+
+// Article individuel
+Route::get('/blog/{slug}', function ($slug) {
+    return Inertia::render('BlogArticle', ['slug' => $slug]);
+})->name('blog.article');
 
 
 
@@ -44,13 +46,11 @@ Route::get('/forum', function () {
 })->name('forum');
 
 // Création d'un sujet (doit être AVANT la route dynamique)
-Route::get('/forum/create', function () {
-    return Inertia::render('ForumCreate');
-})->name('forum.create');
+Route::get('/forum/new', fn() => Inertia::render('NewTopic'))->name('forum.new');
 
 // Détail d'un sujet
 Route::get('/forum/{id}', function ($id) {
-    return Inertia::render('ForumDetail', ['id' => $id]);
+    return Inertia::render('ForumTopic', ['id' => $id]);
 })->name('forum.detail');
 
 // Panier
