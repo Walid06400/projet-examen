@@ -36,9 +36,9 @@ Route::get('/formations', function (){
 })->name('formations');
 
 // Détail d'une formation
-Route::get('/formations/{id}', function ($id) {
-    return Inertia::render('FormationDetail', ['id' => $id]);
-})->name('formation.detail');
+Route::get('/formations/{slug}', function ($slug) {
+    return Inertia::render('FormationDetail', ['slug' => $slug]);
+})->name('formations.detail');
 
 
 Route::get('/forum', function () {
@@ -62,6 +62,10 @@ Route::get('/cart',function () {
 Route::get('/checkout', function () {
     return Inertia::render('Checkout');
 })->name('checkout');
+
+Route::get('/checkout/success', function () {
+    return Inertia::render('CheckoutSuccess');
+})->name('checkout.success');
 
 // Contact
 Route::get('/contact', function () {

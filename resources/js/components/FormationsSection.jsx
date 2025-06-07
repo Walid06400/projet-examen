@@ -4,31 +4,34 @@ import { Link } from "@inertiajs/react"; // ou "react-router-dom"
 
 const formations = [
   {
-    title: "Apprendre la Production",
-    description: "Maîtrisez la production musicale de A à Z.",
+    title: "Production Débutant",
+    description: "Apprenez les bases de la production musicale.",
     image: "/images/formations/formationprod.png",
-    price: 24.99,
-    period: "mois",
-    link: "/formations/production",
+    price: 49.99,
+    link: "/formations/production-debutant",
     badge: "Populaire",
+    level: "Débutant",
+    subject: "Production",
   },
   {
-    title: "Mixage Audio",
+    title: "Mixage Confirmé",
     description: "Devenez un expert du mixage moderne.",
     image: "/images/formations/maoformation.png",
-    price: 29.99,
-    period: "mois",
-    link: "/formations/mixage",
+    price: 69.99,
+    link: "/formations/mixage-confirme",
     badge: "Nouveau",
+    level: "Confirmé",
+    subject: "Mixage",
   },
   {
-    title: "Programmation d'Instruments Virtuels",
+    title: "Programmation Pro",
     description: "Créez et programmez vos propres VST.",
     image: "/images/formations/formationvst.png",
-    price: 34.99,
-    period: "mois",
-    link: "/formations/programmation-vst",
+    price: 99.99,
+    link: "/formations/programmation-vst-pro",
     badge: "",
+    level: "Pro",
+    subject: "Programmation",
   },
 ];
 
@@ -72,10 +75,10 @@ const FormationCard = ({ title, description, image, price, period, link, badge }
         <p className="text-gray-700 mb-4">{description}</p>
         <div className="flex items-center justify-between mt-4">
           <span className="inline-block bg-indigo-600 text-white px-4 py-2 rounded-full font-semibold text-lg shadow-lg">
-            {price} € / {period}
+            {price} €  {period}
           </span>
           <span className="ml-4 inline-block rounded-full bg-white/90 border border-indigo-600 text-indigo-700 font-bold px-6 py-2 shadow hover:bg-indigo-600 hover:text-white transition">
-            S’abonner
+            Acheter le pack
           </span>
         </div>
       </div>

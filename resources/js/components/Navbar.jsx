@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "@inertiajs/react"; // adapte selon ton routage
+import { Link } from "@inertiajs/react";
+import { useCart } from "../components/CartContext"; // ✅ ajuste selon ton chemin
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
+  const { cart } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -18,10 +21,9 @@ export default function Navbar() {
     { name: "Forum", href: "/forum" },
     { name: "Formations", href: "/formations" },
     { name: "Contact", href: "/contact" },
-    { name: "Panier", href: "/cart" },
+    { name: "Panier", href: "/cart" }, // ✅ onglet texte remis
   ];
 
-  // Toujours visibles pour tests/Filament
   const userLinks = [
     { name: "Profil", href: "/profil" },
     { name: "Admin", href: "/admin" },
@@ -48,14 +50,26 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-gray-700 hover:text-indigo-600 font-medium cursor-pointer transition"
+                className="relative text-gray-700 hover:text-indigo-600 font-medium cursor-pointer transition"
               >
                 {link.name}
+                {/* Badge uniquement pour "Panier" */}
+                {link.name === "Panier" && cart.length > 0 && (
+                  <motion.span
+                    key={cart.length}
+                    initial={{ scale: 1 }}
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 0.6, repeat: Infinity, repeatType: "loop" }}
+                    className="absolute -top-2 -right-3 bg-pink-600 text-white text-xs rounded-full px-2 py-0.5 font-bold shadow"
+                  >
+                    {cart.length}
+                  </motion.span>
+                )}
               </Link>
             ))}
           </div>
 
-          {/* Connexion/Inscription + User links desktop */}
+          {/* Connexion/Inscription + User links */}
           <div className="hidden md:flex md:items-center md:space-x-4">
             <Link
               href="/login"
@@ -87,29 +101,17 @@ export default function Navbar() {
               aria-label="Toggle menu"
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 cursor-pointer"
             >
-              {/* Hamburger icon */}
               <svg
                 className="h-6 w-6"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
-                aria-hidden="true"
               >
                 {mobileMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 )}
               </svg>
             </button>
@@ -125,13 +127,26 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 cursor-pointer transition"
                 onClick={() => setMobileMenuOpen(false)}
+                className="relative block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 cursor-pointer transition"
               >
                 {link.name}
+                {link.name === "Panier" && cart.length > 0 && (
+                  <motion.span
+                    key={cart.length}
+                    initial={{ scale: 1 }}
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ duration: 0.6, repeat: Infinity, repeatType: "loop" }}
+                    className="absolute top-0 right-0 translate-x-1 -translate-y-1 bg-pink-600 text-white text-xs rounded-full px-2 py-0.5 font-bold shadow"
+                  >
+                    {cart.length}
+                  </motion.span>
+                )}
               </Link>
             ))}
+
             <hr className="border-gray-300 my-2" />
+
             <Link
               href="/login"
               className="block px-3 py-2 rounded-full font-semibold text-indigo-700 border border-indigo-600 bg-white hover:bg-indigo-50 transition cursor-pointer text-center"

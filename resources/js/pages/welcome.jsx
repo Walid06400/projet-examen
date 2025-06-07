@@ -1,8 +1,8 @@
 import Navbar from "../components/Navbar";
-import Hero from "../components/Hero";
 import ArticlesSection from "../components/ArticlesSection";
-import FormationsSection from "../components/FormationsSection";
+import Hero from "../components/Hero";
 import Footer from "../components/Footer";
+import FormationsSection from "../components/FormationsSection";
 
 export default function Home() {
   return (
@@ -10,8 +10,8 @@ export default function Home() {
       <Navbar />
       <main className="flex-1 flex flex-col items-center">
         <div className="w-full max-w-7xl rounded-3xl shadow-2xl my-10 px-2 sm:px-8 lg:px-12 py-8 bg-white/80 backdrop-blur">
-          <Hero />
           <ArticlesSection />
+          <Hero />
           <FormationsSection />
         </div>
       </main>
