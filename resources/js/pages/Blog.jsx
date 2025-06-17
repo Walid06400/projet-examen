@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "@inertiajs/react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";

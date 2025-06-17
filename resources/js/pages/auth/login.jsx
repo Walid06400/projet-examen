@@ -27,9 +27,9 @@ export default function Login({ status, canResetPassword }) {
         <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
             <Head title="Log in" />
 
-            <form className="flex flex-col gap-6" onSubmit={submit}>
+            <form className="flex flex-col gap-6 shadow-fuchsia-300" onSubmit={submit}>
                 <div className="grid gap-6">
-                    <div className="grid gap-2">
+                    <div className="grid gap-2 text-black">
                         <Label htmlFor="email">Email address</Label>
                         <Input
                             id="email"
@@ -45,7 +45,7 @@ export default function Login({ status, canResetPassword }) {
                         <InputError message={errors.email} />
                     </div>
 
-                    <div className="grid gap-2">
+                    <div className="grid gap-2 text-black">
                         <div className="flex items-center">
                             <Label htmlFor="password">Password</Label>
                             {canResetPassword && (

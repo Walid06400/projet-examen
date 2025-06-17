@@ -32,7 +32,7 @@ export default function Register() {
       <Head title="Inscription" />
    
       <form className="flex flex-col gap-6" onSubmit={submit}>
-        <div className="grid gap-6">
+        <div className="grid gap-6 text-black">
           <div className="grid gap-2">
             <Label htmlFor="name">Nom</Label>
             <Input
@@ -50,7 +50,7 @@ export default function Register() {
             <InputError message={errors.name} className="mt-2" />
           </div>
 
-          <div className="grid gap-2">
+          <div className="grid gap-2 text-black">
             <Label htmlFor="email">Adresse email</Label>
             <Input
               id="email"

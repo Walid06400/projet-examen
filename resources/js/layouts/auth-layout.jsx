@@ -1,4 +1,4 @@
-import AuthLayoutTemplate from '@/layouts/auth/auth-simple-layout';
+import AuthLayoutTemplate from './auth/auth-simple-layout.jsx';
 
 import React from "react";
 

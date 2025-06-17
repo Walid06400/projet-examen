@@ -6,7 +6,7 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 export default function Forum() {
-  const [topics, setTopics] = useState([
+  const [topics,] = useState([
     { id: 1, title: "Quel DAW choisir ?", author: "Alice", replies: 8, category: "Logiciels", lastActivity: "2h", resolved: false, likes: 4 },
     { id: 2, title: "Votre setup home studio ?", author: "Bob", replies: 12, category: "Matériel", lastActivity: "5h", resolved: true, likes: 10 },
   ]);

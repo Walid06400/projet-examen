@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "@inertiajs/react";
-import { useCart } from "../components/CartContext"; // ✅ ajuste selon ton chemin
-import { motion, AnimatePresence } from "framer-motion";
+import { useCart } from "../components/CartContext"; 
+import { motion} from "framer-motion";
 
 export default function Navbar() {
   const { cart } = useCart();
@@ -25,7 +25,6 @@ export default function Navbar() {
   ];
 
   const userLinks = [
-    { name: "Profil", href: "/profil" },
     { name: "Admin", href: "/admin" },
   ];
 
@@ -34,8 +33,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20 items-center">
           {/* Logo */}
-          <div className="flex-shrink-0 flex items-center cursor-pointer">
-            <Link href="/" className="select-none">
+          <div className="cursor-pointer">
+            <Link href="/" className="">
               <img
                 src="/images/logo.png"
                 alt="Logo MAOlogie"
@@ -103,7 +102,7 @@ export default function Navbar() {
             >
               <svg
                 className="h-6 w-6"
-                xmlns="http://www.w3.org/2000/svg"
+                xmlns="/images/logo.png"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
