@@ -3,101 +3,112 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
-class AuthController extends Controller
+class CategoryController extends Controller
 {
+    use AuthorizesRequests;
     /**
-     * Inscription d'un nouvel utilisateur
+     * Afficher toutes les catégories
      */
-    public function register(Request $request): JsonResponse
+    public function index(): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed'
-        ]);
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'email_verified_at' => now()
-        ]);
-
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $categories = Category::withCount(['articles'])
+            ->orderBy('name')
+            ->get();
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'user' => $user,
-                'token' => $token
-            ]
+            'data' => $categories
+        ]);
+    }
+
+    /**
+     * Afficher une catégorie avec ses articles
+     */
+    public function show(string $slug): JsonResponse
+    {
+        $category = Category::where('slug', $slug)
+            ->with(['articles' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            }])
+            ->firstOrFail();
+
+        return response()->json([
+            'success' => true,
+            'data' => $category
+        ]);
+    }
+
+    /**
+     * Créer une nouvelle catégorie
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $this->authorize('create', Category::class);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255|unique:categories',
+            'type' => 'required|in:blog,training,all'
+        ]);
+
+        $validated['slug'] = Str::slug($validated['name']);
+
+        $category = Category::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'data' => $category
         ], 201);
     }
 
     /**
-     * Connexion d'un utilisateur
+     * Mettre à jour une catégorie
      */
-    public function login(Request $request): JsonResponse
+    public function update(Request $request, Category $category): JsonResponse
     {
+        $this->authorize('update', $category);
+
         $validated = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
+            'name' => 'sometimes|string|max:255|unique:categories,name,' . $category->id,
+            'type' => 'sometimes|in:blog,training,all'
         ]);
 
-        if (!Auth::attempt($validated)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Identifiants invalides'
-            ], 401);
+        if (isset($validated['name'])) {
+            $validated['slug'] = Str::slug($validated['name']);
         }
 
-        $user = $request->user();
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $category->update($validated);
 
         return response()->json([
             'success' => true,
-            'data' => [
-                'user' => $user,
-                'token' => $token
-            ]
+            'data' => $category
         ]);
     }
 
     /**
-     * Déconnexion
+     * Supprimer une catégorie
      */
-    public function logout(Request $request): JsonResponse
+    public function destroy(Category $category): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $this->authorize('delete', $category);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Déconnexion réussie'
-        ]);
-    }
-
-    /**
-     * Informations de l'utilisateur connecté
-     */
-    public function user(Request $request): JsonResponse
-    {
-        $user = $request->user();
-
-        if (!$user) {
+        if ($category->articles()->count() > 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'Utilisateur non authentifié'
-            ], 401);
+                'message' => 'Impossible de supprimer une catégorie contenant des articles'
+            ], 422);
         }
+
+        $category->delete();
+
         return response()->json([
             'success' => true,
-            'data' => $user
+            'message' => 'Catégorie supprimée avec succès'
         ]);
     }
 }
