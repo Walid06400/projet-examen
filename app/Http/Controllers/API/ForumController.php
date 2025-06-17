@@ -3,118 +3,101 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\ForumTopic;
-use App\Models\ForumPost;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
-class ForumController extends Controller
+class AuthController extends Controller
 {
-    use AuthorizesRequests;
     /**
-     * Afficher tous les sujets du forum
+     * Inscription d'un nouvel utilisateur
      */
-    public function index(): JsonResponse
-    {
-        $topics = ForumTopic::with(['user', 'posts'])
-            ->withCount('posts')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
-
-        return response()->json([
-            'success' => true,
-            'data' => $topics
-        ]);
-    }
-
-    /**
-     * Afficher un sujet avec ses posts
-     */
-    public function show(ForumTopic $topic): JsonResponse
-    {
-        $topic->load([
-            'user',
-            'posts.user',
-            'posts.reactions'
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'data' => $topic
-        ]);
-    }
-
-    /**
-     * Créer un nouveau sujet
-     */
-    public function store(Request $request): JsonResponse
+    public function register(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'content' => 'required|string'
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed'
         ]);
 
-        $topic = ForumTopic::create([
-            'user_id' => auth()->id(),
-            'title' => $validated['title']
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'email_verified_at' => now()
         ]);
 
-        // Créer le premier post
-        ForumPost::create([
-            'topic_id' => $topic->id,
-            'user_id' => auth()->id(),
-            'content' => $validated['content']
-        ]);
-
-        $topic->load(['user', 'posts.user']);
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'success' => true,
-            'data' => $topic
+            'data' => [
+                'user' => $user,
+                'token' => $token
+            ]
         ], 201);
     }
 
     /**
-     * Ajouter un post à un sujet
+     * Connexion d'un utilisateur
      */
-    public function addPost(Request $request, ForumTopic $topic): JsonResponse
+    public function login(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'content' => 'required|string'
+            'email' => 'required|email',
+            'password' => 'required'
         ]);
 
-        $post = ForumPost::create([
-            'topic_id' => $topic->id,
-            'user_id' => auth()->id(),
-            'content' => $validated['content']
-        ]);
+        if (!Auth::attempt($validated)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Identifiants invalides'
+            ], 401);
+        }
 
-        $post->load('user');
+        $user = $request->user();
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'success' => true,
-            'data' => $post
-        ], 201);
+            'data' => [
+                'user' => $user,
+                'token' => $token
+            ]
+        ]);
     }
 
     /**
-     * Marquer un post comme solution
+     * Déconnexion
      */
-    public function markAsSolution(ForumPost $post): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-        $this->authorize('markAsSolution', $post);
-
-        // Retirer la solution précédente
-        ForumPost::where('topic_id', $post->topic_id)
-            ->update(['is_solution' => false]);
-
-        // Marquer ce post comme solution
-        $post->update(['is_solution' => true]);
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Post marqué comme solution'
+            'message' => 'Déconnexion réussie'
+        ]);
+    }
+
+    /**
+     * Informations de l'utilisateur connecté
+     */
+    public function user(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non authentifié'
+            ], 401);
+        }
+        return response()->json([
+            'success' => true,
+            'data' => $user
         ]);
     }
 }

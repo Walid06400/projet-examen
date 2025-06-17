@@ -7,19 +7,19 @@ use App\Models\Cart;
 use App\Models\Training;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
     /**
      * Afficher le panier de l'utilisateur
      */
-    public function show(): JsonResponse
+    public function show(Request $request): JsonResponse
     {
-        $cart = auth()->user()->cart()->with('trainings')->first();
+        $user = $request->user();
+        $cart = $user->cart()->with('trainings')->first();
 
         if (!$cart) {
-            $cart = Cart::create(['user_id' => auth()->id()]);
+            $cart = Cart::create(['user_id' => $user->id]);
             $cart->load('trainings');
         }
 
@@ -38,12 +38,13 @@ class CartController extends Controller
     /**
      * Ajouter une formation au panier
      */
-    public function add(Training $training): JsonResponse
+    public function add(Request $request, Training $training): JsonResponse
     {
-        $cart = auth()->user()->cart;
+        $user = $request->user();
+        $cart = $user->cart;
 
         if (!$cart) {
-            $cart = Cart::create(['user_id' => auth()->id()]);
+            $cart = Cart::create(['user_id' => $user->id]);
         }
 
         if ($cart->trainings()->where('training_id', $training->id)->exists()) {
@@ -72,9 +73,10 @@ class CartController extends Controller
     /**
      * Retirer une formation du panier
      */
-    public function remove(Training $training): JsonResponse
+    public function remove(Request $request, Training $training): JsonResponse
     {
-        $cart = auth()->user()->cart;
+        $user = $request->user();
+        $cart = $user->cart;
 
         if (!$cart) {
             return response()->json([
@@ -102,14 +104,14 @@ class CartController extends Controller
     /**
      * Vider le panier
      */
-    public function clear(): JsonResponse
+    public function clear(Request $request): JsonResponse
     {
-        $cart = auth()->user()->cart;
+        $user = $request->user();
+        $cart = $user->cart;
 
         if ($cart) {
             $cart->trainings()->detach();
         }
-
         return response()->json([
             'success' => true,
             'message' => 'Panier vidé avec succès'
