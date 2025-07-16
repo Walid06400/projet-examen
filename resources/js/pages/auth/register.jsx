@@ -4,7 +4,7 @@ import { LoaderCircle } from "lucide-react";
 
 import InputError from "@/components/input-error";
 import TextLink from "@/components/text-link";
-import Button from "@/components/Button";
+import Button from "@/components//Button";
 import Input from "@/components/Input";
 import Label from "@/components/Label";
 import AuthLayout from "@/layouts/auth-layout";

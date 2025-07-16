@@ -35,7 +35,15 @@ class ArticleResource extends Resource
             TextInput::make('title')->required(),
             TextInput::make('slug')->required(),
             RichEditor::make('content')->required(),
-            FileUpload::make('image')->image(),
+            // app/Filament/Resources/ArticleResource.php
+            FileUpload::make('image')
+                ->disk('public') // Utilise le disque configuré
+                ->directory('articles') // Dossier dans storage/app/public
+                ->visibility('public') // Permissions
+                ->image()
+                ->maxSize(4096) // 4Mo
+                ->required(),
+
         ]);
     }
     

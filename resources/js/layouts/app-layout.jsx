@@ -1,7 +1,15 @@
-import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
+// resources/js/layouts/app-layout.jsx
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 
-export default ({ children, breadcrumbs, ...props }) => (
-    <AppLayoutTemplate breadcrumbs={breadcrumbs} {...props}>
+export default function AppLayout({ children }) {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-grow pt-16"> {/* Ajout de pt-16 */}
         {children}
-    </AppLayoutTemplate>
-);
+      </main>
+      <Footer />
+    </div>
+  );
+}

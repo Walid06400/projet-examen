@@ -2,10 +2,12 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\CategoryResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -27,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-             ->brandName('MAOlogie Admin')
+            ->brandName('MAOlogie Admin')
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -40,6 +42,12 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+            ])
+            ->navigationItems([
+                NavigationItem::make('Catégories')
+                    ->url(fn (): string => CategoryResource::getUrl())
+                    ->icon('heroicon-o-tag')
+                    ->sort(3),
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -55,6 +63,5 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
-  
     }
 }

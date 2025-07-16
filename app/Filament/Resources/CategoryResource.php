@@ -7,9 +7,12 @@ use App\Filament\Resources\CategoryResource\RelationManagers;
 use App\Models\Category;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -21,25 +24,41 @@ class CategoryResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                //
-            ]);
-    }
+     return $form
+        ->schema([
+            TextInput::make('name')
+                ->required()
+                ->maxLength(255),
+            TextInput::make('slug')
+                ->required()
+                ->maxLength(255)
+                ->unique(ignoreRecord: true),
+            Select::make('type')
+                ->options([
+                    'blog' => 'Blog',
+                    'training' => 'Formation',
+                    'all' => 'Tous',
+                ])
+                ->required(),
+        ]);
+}
 
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                //
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
+public static function table(Table $table): Table
+{
+    return $table
+        ->columns([
+            TextColumn::make('name'),
+            TextColumn::make('slug'),
+            TextColumn::make('type'),
+        ])
+        ->filters([
+            //
+        ])
+        ->actions([
+            Tables\Actions\EditAction::make(),
+        ])
+
+        ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),

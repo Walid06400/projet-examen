@@ -10,7 +10,7 @@ import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
 
 // 🛒 Fournisseur de contexte pour le panier
-import { CartProvider } from './components/CartContext';
+import { CartProvider } from './contexts/CartContext';
 
 // 📛 Nom de l'app depuis .env
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';

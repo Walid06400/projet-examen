@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link } from "@inertiajs/react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import CommentCard from "../components/CommentCard";
-import ReplyForm from "../components/ReplyForm";
+import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
+import CommentCard from "../components/forum/CommentCard";
+import ReplyForm from "../components/forum/ReplyForm";
 
 export default function ForumTopic() {
   const [topic, setTopic] = useState({

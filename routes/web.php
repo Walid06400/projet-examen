@@ -2,37 +2,41 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+// routes/web.php
+use App\Http\Controllers\WelcomeController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\FormationController;
+use App\Http\Controllers\TrainingCatalogController;
+use App\Http\Controllers\ForumController;
 
-// Page d'accueil
-Route::get('/', fn ()=> Inertia::render('welcome'))->name('home');
+
+// Remplacer la route existante par :
+Route::get('/', [WelcomeController::class, 'index'])->name('home');
 
 // Authentification
 Route::get('/login', fn() => Inertia::render('auth/Login'))->name('login');
 Route::get('/register', fn() => Inertia::render('auth/Register'))->name('register');
 
 // Liste du blog
-Route::get('/blog', function () {
-    return Inertia::render('Blog');
-})->name('blog');
+Route::get('/blog', [BlogController::class, 'index'])->name('blog');
+
 // Liste d'articles par catégorie
-Route::get('/blog/categorie/{slug}', function ($slug) {
-    return Inertia::render('BlogCategory', ['slug' => $slug]);
-})->name('blog.category');
+Route::get('/blog/categorie/{slug}', [BlogController::class, 'byCategory'])->name('blog.category');
+
 // Article individuel
-Route::get('/blog/{slug}', function ($slug) {
-    return Inertia::render('BlogArticle', ['slug' => $slug]);
-})->name('blog.article');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.article');
 
 
 
-// Formations (liste)
-Route::get('/formations', function (){
-    return Inertia::render('Formations');
-})->name('formations');
-// Détail d'une formation
-Route::get('/formations/{slug}', function ($slug) {
-    return Inertia::render('FormationDetail', ['slug' => $slug]);
-})->name('formations.detail');
+
+//Route::get('/formations', [FormationController::class, 'index'])->name('formations');
+//Route::get('/formations/{slug}', [FormationController::class, 'show'])->name('formations.detail');
+/* Catalogue formations */
+Route::get('/formations',        [TrainingCatalogController::class, 'index'])
+     ->name('formations');
+
+Route::get('/formations/{slug}', [TrainingCatalogController::class, 'show'])
+     ->name('formations.detail');
 
 //Forum
 Route::get('/forum', function () {
@@ -80,10 +84,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profil', function () {
         return Inertia::render('Profil');
     })->name('profil');
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->name('dashboard');
-});
+Route::get('/dashboard', function () {
+    return Inertia::render('Dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+}); 
 
 
 

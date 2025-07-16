@@ -40,6 +40,14 @@ use AuthorizesRequests;
         ]);
     }
 
+    public function featured()
+{
+    return Training::orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
+}
+
+
     /**
      * Créer une nouvelle formation
      */

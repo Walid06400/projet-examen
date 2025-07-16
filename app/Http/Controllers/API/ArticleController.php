@@ -102,6 +102,15 @@ class ArticleController extends Controller
         ]);
     }
 
+    public function featured()
+{
+    return Article::with('category')
+        ->orderBy('created_at', 'desc')
+        ->take(3)
+        ->get();
+}
+
+
     /**
      * Supprimer un article
      */

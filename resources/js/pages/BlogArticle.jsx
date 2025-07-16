@@ -1,123 +1,102 @@
-import React, { useState } from "react";
-import { Link, usePage } from "@inertiajs/react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+// resources/js/pages/BlogArticle.jsx
+import { Head, usePage, Link } from "@inertiajs/react";
+import AppLayout from "@/layouts/app-layout";
+import { motion } from "framer-motion";
 
+export default function BlogArticle() {
+    const { article, relatedArticles } = usePage().props;
 
-// Liste des articles mock (même slugs que dans Blog.jsx)
-const allArticles = [
-  {
-    title: "Comprendre la MAO",
-    slug: "comprendre-mao",
-    image: "/images/articles/MAO.png",
-    content: `
-      <p>La MAO (Musique Assistée par Ordinateur) est l’ensemble des techniques et outils permettant de composer, enregistrer, mixer et produire de la musique à l’aide d’un ordinateur.</p>
-      <p>Dans ce blog, tu trouveras des guides, astuces et ressources pour progresser à chaque étape de ton parcours MAO !</p>
-    `,
-    category: "Fondamentaux",
-  },
-  {
-    title: "Mixage : astuces pro",
-    slug: "mixage-astuces-pro",
-    image: "/images/articles/Mixage-astuce.png",
-    content: `
-      <p>Voici 5 techniques pour améliorer vos mix rapidement : ...</p>
-    `,
-    category: "Mixage",
-  },
-  {
-    title: "Instruments virtuels",
-    slug: "instruments-virtuels",
-    image: "/images/articles/vst-plugins.png",
-    content: `
-      <p>Les meilleurs plugins gratuits de 2025 sont ...</p>
-    `,
-    category: "Logiciels",
-  },
-
-  { 
-    title: "Premiers pas en production",
-    slug: "premiers-pas-production",
-    image: "/images/categories/productionMAO.png",
-    content: `
-      <p>Comment débuter une production musicale de zéro ? Voici les étapes clés : ...</p>
-    `,
-    category: "Production",
-  },
-
-  {
-    title: "Créer ses propres instruments",
-    slug: "creer-instruments",
-    image: "/images/categories/crée-vst.jfif",
-    content: `
-      <p>Découvre comment programmer et utiliser tes propres VST pour personnaliser ton son !</p>
-    `,
-    category: "Programmation",
-  },
-    // Ajoute tous les articles mock ici
-];
-
-export default function BlogArticle({ slug }) {
-  // Récupère le slug passé par la route Inertia
-  // (Si tu utilises usePage() : const { slug } = usePage().props;)
-  const article = allArticles.find((a) => a.slug === slug);
-
-
-  // Mock des commentaires
-  const [comments, setComments] = useState([
-    { author: "Alice", content: "Super article, merci !", date: "2025-06-01" },
-    { author: "Bob", content: "Très clair, j’attends la suite.", date: "2025-06-02" },
-  ]);
-  const [newComment, setNewComment] = useState("");
-
-  const handleComment = (e) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-    setComments([
-      ...comments,
-      {
-        author: "Vous",
-        content: newComment,
-        date: new Date().toLocaleDateString("fr-FR"),
-      },
-    ]);
-    setNewComment("");
-  };
-
-  if (!article) {
     return (
-      <div className="max-w-3xl mx-auto py-12 px-4 text-center">
-        <h1 className="text-2xl font-bold mb-4 text-red-600">Article introuvable</h1>
-        <Link href="/blog" className="text-indigo-600 hover:underline font-semibold">
-          ← Retour au blog
-        </Link>
-      </div>
-    );
-  }
+        <AppLayout>
+            <Head title={article.title} />
+            
+            <div className="container mx-auto py-16 px-4">
+                <div className="max-w-4xl mx-auto">
+                    {/* Fil d'Ariane */}
+                    <div className="flex items-center text-sm text-gray-500 mb-6">
+                        <Link href={route('blog')} className="hover:text-purple-600">
+                            Blog
+                        </Link>
+                        <svg className="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                        <Link href={route('blog.category', article.category.slug)} className="hover:text-purple-600">
+                            {article.category.name}
+                        </Link>
+                    </div>
+                    
+                    {/* En-tête de l'article */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <h1 className="text-4xl font-bold text-gray-800 mb-4">
+                            {article.title}
+                        </h1>
+                        
+                        <div className="flex items-center text-gray-500 mb-8">
+                            <span>
+                                {new Date(article.created_at).toLocaleDateString('fr-FR', {
+                                    day: 'numeric',
+                                    month: 'long',
+                                    year: 'numeric'
+                                })}
+                            </span>
+                            <span className="mx-2">•</span>
+                            <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                                {article.category.name}
+                            </span>
+                        </div>
+                        
+                        {/* Image principale */}
+                        {article.image_url && (
+                            <div className="mb-8 rounded-xl overflow-hidden">
+                             // resources/js/components/blog/ArticlesSection.js
+                            <img 
+                                src={article.image_url}
+                                alt={article.title}
+                                className="w-full h-auto"
+                            />
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex flex-col">
-      <Navbar />
-      <main className="flex-1 max-w-3xl mx-auto py-12 px-4">
-        <Link
-          href="/blog"
-          className="inline-block mb-6 text-indigo-600 hover:underline font-semibold"
-        >
-          ← Retour au blog
-        </Link>
-        <img
-          src={article.image}
-          alt={article.title}
-          className="w-full h-64 object-cover rounded-xl mb-6"
-        />
-        <span className="text-indigo-600 text-xs uppercase font-bold">{article.category}</span>
-        <h1 className="text-3xl font-extrabold my-4 text-gray-900">{article.title}</h1>
-        <div
-          className="text-gray-700 leading-relaxed prose prose-indigo max-w-none"
-          dangerouslySetInnerHTML={{ __html: article.content }}
-        />
-      </main>
-      <Footer />
-    </div>
-  );
+
+                            </div>
+                        )}
+                        
+                        {/* Contenu de l'article */}
+                        <div 
+                            className="prose prose-lg max-w-none"
+                            dangerouslySetInnerHTML={{ __html: article.content }}
+                        />
+                    </motion.div>
+                    
+                    {/* Articles similaires */}
+                    {relatedArticles.length > 0 && (
+                        <div className="mt-16">
+                            <h3 className="text-2xl font-bold text-gray-800 mb-6">
+                                Articles similaires
+                            </h3>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {relatedArticles.map(relatedArticle => (
+                                    <Link 
+                                        key={relatedArticle.id}
+                                        href={route('blog.article', relatedArticle.slug)}
+                                        className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow"
+                                    >
+                                        <h4 className="font-bold text-gray-800 mb-2">
+                                            {relatedArticle.title}
+                                        </h4>
+                                        <p className="text-gray-600 text-sm line-clamp-2">
+                                            {relatedArticle.excerpt || relatedArticle.content.substring(0, 100)}
+                                        </p>
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </AppLayout>
+    );
 }
