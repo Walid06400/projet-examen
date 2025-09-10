@@ -1,12 +1,10 @@
-// Components
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
-import  Button  from '@/components/button';
-import  Input  from '@/components/input';
-import  Label  from '@/components/label';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Label from '@/components/ui/Label';
 import AuthLayout from '@/layouts/auth-layout';
 
 export default function ForgotPassword({ status }) {
@@ -16,45 +14,66 @@ export default function ForgotPassword({ status }) {
 
     const submit = (e) => {
         e.preventDefault();
-
         post(route('password.email'));
     };
 
     return (
-        <AuthLayout title="Forgot password" description="Enter your email to receive a password reset link">
-            <Head title="Forgot password" />
+        <AuthLayout>
+            <Head title="Mot de passe oublié" />
 
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
+            <div className="w-full max-w-md">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">Mot de passe oublié</h1>
+                    <p className="text-gray-600 mt-2">
+                        Saisissez votre email pour recevoir un lien de réinitialisation
+                    </p>
+                </div>
 
-            <div className="space-y-6">
-                <form onSubmit={submit}>
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                {status && (
+                    <div className="mb-4 font-medium text-sm text-green-600 text-center p-4 bg-green-50 rounded-md">
+                        {status}
+                    </div>
+                )}
+
+                <form onSubmit={submit} className="space-y-6">
+                    <div>
+                        <Label htmlFor="email" required>Email</Label>
                         <Input
                             id="email"
                             type="email"
                             name="email"
-                            autoComplete="off"
                             value={data.email}
-                            autoFocus
+                            autoComplete="username"
+                            placeholder="votre@email.com"
+                            error={errors.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
                         />
-
                         <InputError message={errors.email} />
                     </div>
 
-                    <div className="my-6 flex items-center justify-start">
-                        <Button className="w-full" disabled={processing}>
-                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Email password reset link
-                        </Button>
-                    </div>
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="w-full"
+                    >
+                        {processing ? (
+                            <>
+                                <LoaderCircle className="animate-spin -ml-1 mr-3 h-5 w-5" />
+                                Envoi en cours...
+                            </>
+                        ) : (
+                            'Envoyer le lien'
+                        )}
+                    </Button>
                 </form>
 
-                <div className="text-muted-foreground space-x-1 text-center text-sm">
-                    <span>Or, return to</span>
-                    <TextLink href={route('login')}>log in</TextLink>
+                <div className="mt-6 text-center">
+                    <p className="text-sm text-gray-600">
+                        Vous vous souvenez de votre mot de passe ?{' '}
+                        <TextLink href={route('login')}>
+                            Se connecter
+                        </TextLink>
+                    </p>
                 </div>
             </div>
         </AuthLayout>

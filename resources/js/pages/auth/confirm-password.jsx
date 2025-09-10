@@ -1,11 +1,9 @@
-// Components
 import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-
 import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Label from '@/components/ui/Label';
 import AuthLayout from '@/layouts/auth-layout';
 
 export default function ConfirmPassword() {
@@ -15,45 +13,55 @@ export default function ConfirmPassword() {
 
     const submit = (e) => {
         e.preventDefault();
-
         post(route('password.confirm'), {
             onFinish: () => reset('password'),
         });
     };
 
     return (
-        <AuthLayout
-            title="Confirm your password"
-            description="This is a secure area of the application. Please confirm your password before continuing."
-        >
-            <Head title="Confirm password" />
+        <AuthLayout>
+            <Head title="Confirmer le mot de passe" />
 
-            <form onSubmit={submit}>
-                <div className="space-y-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+            <div className="w-full max-w-md">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">Confirmation requise</h1>
+                    <p className="text-gray-600 mt-2">
+                        Veuillez confirmer votre mot de passe pour continuer
+                    </p>
+                </div>
+
+                <form onSubmit={submit} className="space-y-6">
+                    <div>
+                        <Label htmlFor="password" required>Mot de passe</Label>
                         <Input
                             id="password"
                             type="password"
                             name="password"
-                            placeholder="Password"
-                            autoComplete="current-password"
                             value={data.password}
-                            autoFocus
+                            autoComplete="current-password"
+                            placeholder="••••••••"
+                            error={errors.password}
                             onChange={(e) => setData('password', e.target.value)}
                         />
-
                         <InputError message={errors.password} />
                     </div>
 
-                    <div className="flex items-center">
-                        <Button className="w-full" disabled={processing}>
-                            {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                            Confirm password
-                        </Button>
-                    </div>
-                </div>
-            </form>
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="w-full"
+                    >
+                        {processing ? (
+                            <>
+                                <LoaderCircle className="animate-spin -ml-1 mr-3 h-5 w-5" />
+                                Confirmation...
+                            </>
+                        ) : (
+                            'Confirmer'
+                        )}
+                    </Button>
+                </form>
+            </div>
         </AuthLayout>
     );
 }

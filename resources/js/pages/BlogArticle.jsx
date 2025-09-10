@@ -1,100 +1,154 @@
-// resources/js/pages/BlogArticle.jsx
-import { Head, usePage, Link } from "@inertiajs/react";
-import AppLayout from "@/layouts/app-layout";
-import { motion } from "framer-motion";
+// resources/js/pages/BlogArticle.jsx - AVEC COMMENTAIRES
+
+import React from 'react';
+import { Head, useForm, usePage, Link } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
 
 export default function BlogArticle() {
-    const { article, relatedArticles } = usePage().props;
+    const { article, comments, canComment } = usePage().props;
+    
+    const { data, setData, post, reset, processing, errors } = useForm({
+        content: '',
+        article_id: article.id,
+    });
+
+    const submitComment = (e) => {
+        e.preventDefault();
+        post(route('comments.store'), {
+            preserveScroll: true,
+            onSuccess: () => reset('content'),
+        });
+    };
 
     return (
         <AppLayout>
             <Head title={article.title} />
-            
-            <div className="container mx-auto py-16 px-4">
-                <div className="max-w-4xl mx-auto">
-                    {/* Fil d'Ariane */}
-                    <div className="flex items-center text-sm text-gray-500 mb-6">
-                        <Link href={route('blog')} className="hover:text-purple-600">
-                            Blog
-                        </Link>
-                        <svg className="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                        <Link href={route('blog.category', article.category.slug)} className="hover:text-purple-600">
+
+            <div className="container mx-auto py-12 px-4 max-w-4xl">
+                {/* Article */}
+                <article className="mb-12">
+                    {article.image_url && (
+                        <img
+                            src={article.image_url}
+                            alt={article.title}
+                            className="w-full rounded-xl mb-8"
+                        />
+                    )}
+
+                    <div className="mb-6">
+                        <Link
+                            href={`/blog/category/${article.category.slug}`}
+                            className="text-purple-600 text-sm font-medium mb-2 inline-block"
+                        >
                             {article.category.name}
                         </Link>
-                    </div>
-                    
-                    {/* En-tête de l'article */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                    >
                         <h1 className="text-4xl font-bold text-gray-800 mb-4">
                             {article.title}
                         </h1>
-                        
-                        <div className="flex items-center text-gray-500 mb-8">
-                            <span>
-                                {new Date(article.created_at).toLocaleDateString('fr-FR', {
-                                    day: 'numeric',
-                                    month: 'long',
-                                    year: 'numeric'
-                                })}
-                            </span>
-                            <span className="mx-2">•</span>
-                            <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                                {article.category.name}
-                            </span>
+                        <div className="text-gray-600 text-sm">
+                            Par {article.author} • {article.created_at}
                         </div>
-                        
-                        {/* Image principale */}
-                        {article.image_url && (
-                            <div className="mb-8 rounded-xl overflow-hidden">
-                             // resources/js/components/blog/ArticlesSection.js
-                            <img 
-                                src={article.image_url}
-                                alt={article.title}
-                                className="w-full h-auto"
-                            />
+                    </div>
 
+                    <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{ __html: article.content }}
+                    />
+                </article>
 
+                {/* Section commentaires */}
+                <section className="border-t pt-8">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                        Commentaires ({comments.length})
+                    </h2>
+
+                    {/* Formulaire d'ajout */}
+                    {canComment ? (
+                        <form onSubmit={submitComment} className="mb-8 bg-gray-50 p-6 rounded-lg">
+                            <div className="mb-4">
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Votre commentaire
+                                </label>
+                                <textarea
+                                    value={data.content}
+                                    onChange={e => setData('content', e.target.value)}
+                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                                    rows="4"
+                                    placeholder="Partagez votre opinion..."
+                                />
+                                {errors.content && (
+                                    <div className="text-red-500 text-sm mt-1">{errors.content}</div>
+                                )}
                             </div>
-                        )}
-                        
-                        {/* Contenu de l'article */}
-                        <div 
-                            className="prose prose-lg max-w-none"
-                            dangerouslySetInnerHTML={{ __html: article.content }}
-                        />
-                    </motion.div>
-                    
-                    {/* Articles similaires */}
-                    {relatedArticles.length > 0 && (
-                        <div className="mt-16">
-                            <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                                Articles similaires
-                            </h3>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                {relatedArticles.map(relatedArticle => (
-                                    <Link 
-                                        key={relatedArticle.id}
-                                        href={route('blog.article', relatedArticle.slug)}
-                                        className="bg-white rounded-lg shadow p-4 hover:shadow-lg transition-shadow"
-                                    >
-                                        <h4 className="font-bold text-gray-800 mb-2">
-                                            {relatedArticle.title}
-                                        </h4>
-                                        <p className="text-gray-600 text-sm line-clamp-2">
-                                            {relatedArticle.excerpt || relatedArticle.content.substring(0, 100)}
-                                        </p>
-                                    </Link>
-                                ))}
-                            </div>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50"
+                            >
+                                {processing ? 'Publication...' : 'Publier le commentaire'}
+                            </button>
+                        </form>
+                    ) : (
+                        <div className="mb-8 p-4 bg-gray-100 rounded-lg text-center">
+                            <p className="text-gray-600">
+                                <Link href="/login" className="text-purple-600 hover:underline">
+                                    Connectez-vous
+                                </Link>{' '}
+                                pour laisser un commentaire
+                            </p>
                         </div>
                     )}
+
+                    {/* Liste des commentaires */}
+                    <div className="space-y-6">
+                        {comments.length > 0 ? (
+                            comments.map((comment) => (
+                                <div key={comment.id} className="border-l-4 border-purple-500 pl-6 py-4">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="text-sm text-gray-600">
+                                            <span className="font-medium text-gray-800">
+                                                {comment.user.name}
+                                            </span>
+                                            {' • '}
+                                            {comment.created_at}
+                                        </div>
+                                        {comment.can_delete && (
+                                            <Link
+                                                href={route('comments.destroy', comment.id)}
+                                                method="delete"
+                                                as="button"
+                                                className="text-red-500 text-sm hover:underline"
+                                                onClick={(e) => {
+                                                    if (!confirm('Supprimer ce commentaire ?')) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            >
+                                                Supprimer
+                                            </Link>
+                                        )}
+                                    </div>
+                                    <p className="text-gray-700 leading-relaxed">
+                                        {comment.content}
+                                    </p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500 text-center py-8">
+                                Aucun commentaire pour le moment. Soyez le premier à commenter !
+                            </p>
+                        )}
+                    </div>
+                </section>
+
+                {/* Navigation */}
+                <div className="mt-12 text-center">
+                    <Link
+                        href="/blog"
+                        className="text-purple-600 hover:underline"
+                    >
+                        ← Retour au blog
+                    </Link>
                 </div>
             </div>
         </AppLayout>

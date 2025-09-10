@@ -1,24 +1,38 @@
 <?php
+// app/Models/Category.php
 
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Category extends Model
 {
-    use HasFactory; //SoftDeletes;
-
-   // protected $dates = ['deleted_at'];  
-
     protected $fillable = [
         'name',
         'slug',
-        'type', // 'blog', 'training', 'all'
+        'description',
+        'image',
+        'type'
     ];
-    public function articles()
+
+    /**
+     * Relation avec les articles
+     */
+    public function articles(): HasMany
     {
         return $this->hasMany(Article::class);
+    }
+
+    /**
+     * Accesseur pour l'URL de l'image
+     */
+    public function getImageUrlAttribute(): string
+    {
+        if ($this->image) {
+            return Storage::url($this->image);
+        }
+        return asset('images/default-category.jpg');
     }
 }

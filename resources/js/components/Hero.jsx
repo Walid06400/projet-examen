@@ -34,26 +34,13 @@ export default function Hero() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
               Devenez un expert en production musicale
             </h1>
-            
-            <p className="text-xl md:text-2xl opacity-90">
-              Formations, tutoriels et ressources pour maîtriser la musique assistée par ordinateur.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link 
-                href={route('formations')} 
-                className="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-3 rounded-md font-medium text-lg transition-colors duration-200 text-center"
-              >
-                Découvrir nos formations
-              </Link>
-              
-              <Link 
-                href={route('blog')} 
-                className="bg-transparent border-2 border-white hover:bg-white/10 px-8 py-3 rounded-md font-medium text-lg transition-colors duration-200 text-center"
-              >
-                Lire le blog
-              </Link>
-            </div>
+            {/* ✅ CORRECTION : route('blog') → '/blog' */}
+            <Link 
+              href="/blog" 
+              className="inline-block bg-transparent border-2 border-white hover:bg-white/10 px-8 py-3 rounded-md font-medium text-lg transition-colors duration-200 text-center"
+            >
+              Lire le blog
+            </Link>
           </motion.div>
         </div>
       </div>

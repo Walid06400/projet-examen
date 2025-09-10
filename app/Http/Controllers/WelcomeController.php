@@ -1,43 +1,78 @@
 <?php
+// app/Http/Controllers/WelcomeController.php
+
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
 use App\Models\Article;
-use App\Models\Training;
+use App\Models\Category;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class WelcomeController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
-        $recentArticles = Article::with('category')
-            ->select(['id','title','slug','image','created_at','category_id']) // on filtre AVANT get()
-            ->latest()
-            ->take(3)
-            ->get()                          // ← on ne rappelle plus get() derrière
-            ->map(function ($article) {
-            // Force l'inclusion de l'accesseur image_url dans le tableau envoyé à Inertia
-            $article->image_url = $article->image_url;
-            return $article;
-        });
-              $featuredTrainings = Training::select(['id','title','slug','image','price'])
-            ->latest()
+        // ✅ VRAIES DONNÉES depuis la BDD
+        $featuredArticles = Article::with(['category', 'user'])
+            ->published()
+            ->featured()
+            ->latest('published_at')
             ->take(3)
             ->get()
-            ->each(function ($article) {
-                $article->image_url = $article->image_url; // Force l'inclusion de l'accesseur image_url
-        });
+            ->map(function ($article) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'slug' => $article->slug,
+                    'excerpt' => $article->excerpt,
+                    'image' => $article->image_url, // ✅ Utilise l'accesseur
+                    'category' => [
+                        'id' => $article->category?->id,
+                        'name' => $article->category?->name ?? 'Non catégorisé',
+                        'slug' => $article->category?->slug ?? 'general',
+                    ],
+                    'author' => [
+                        'name' => $article->user?->name ?? 'Auteur anonyme',
+                    ],
+                    'published_at' => $article->published_at?->format('d M Y'),
+                    'read_time' => $this->calculateReadTime($article->content),
+                ];
+            });
 
-         $formations = Training::active()
-        ->select(['id','title','slug','description','price','image'])
-        ->featured()          // si tu veux vraiment « à la une », sinon ->latest()->take(3)
-        ->take(3)
-        ->get()
-        ->each->append('image_url');
+        $recentArticles = Article::with(['category', 'user'])
+            ->published()
+            ->latest('published_at')
+            ->take(6)
+            ->get()
+            ->map(function ($article) {
+                return [
+                    'id' => $article->id,
+                    'title' => $article->title,
+                    'slug' => $article->slug,
+                    'excerpt' => $article->excerpt,
+                    'image' => $article->image_url,
+                    'category' => [
+                        'id' => $article->category?->id,
+                        'name' => $article->category?->name ?? 'Non catégorisé',
+                        'slug' => $article->category?->slug ?? 'general',
+                    ],
+                    'author' => [
+                        'name' => $article->user?->name ?? 'Auteur anonyme',
+                    ],
+                    'published_at' => $article->published_at?->format('d M Y'),
+                ];
+            });
 
-         return Inertia::render('welcome', [
-        'formations'     => $formations,
-        'recentArticles' => $recentArticles,
-
+        return Inertia::render('Welcome', [
+            'featuredArticles' => $featuredArticles,
+            'recentArticles' => $recentArticles,
         ]);
+    }
+
+    private function calculateReadTime(string $content): string
+    {
+        $wordCount = str_word_count(strip_tags($content));
+        $minutes = ceil($wordCount / 200); // 200 mots par minute
+        return $minutes . ' min de lecture';
     }
 }
