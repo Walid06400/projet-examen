@@ -4,7 +4,6 @@
 namespace App\Providers\Filament;
 
 use Filament\Http\Middleware\Authenticate;
-use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
 use Filament\Panel;
@@ -30,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('MAOlogie Admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Purple,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -50,16 +49,11 @@ class AdminPanelProvider extends PanelProvider
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
                 SubstituteBindings::class,
-                DisableBladeIconComponents::class,
+                // 🎯 CRITIQUE : NE PAS inclure DisableBladeIconComponents
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            // 🎯 SOLUTION CRITIQUE : Désactiver le système d'icônes blade automatique
-            ->renderHook(
-                'panels::body.start',
-                fn () => view('filament.custom-icons')
-            );
+            ]);
     }
 }
