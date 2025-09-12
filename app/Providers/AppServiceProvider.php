@@ -1,11 +1,11 @@
 <?php
+// app/Providers/AppServiceProvider.php
 
 namespace App\Providers;
 
-use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
-use BladeUI\Icons\BladeIconsServiceProvider;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-          $this->app->register(BladeIconsServiceProvider::class);
+        // Auto-discovery gère les packages automatiquement
     }
 
     /**
@@ -22,19 +22,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-     Inertia::share([
-        'auth' => [
-            'user' => function () {
-                $user = Auth::user();
-                return $user ? [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'is_admin' => $user->is_admin ?? false,
-                ] : null;
-            },
-        ],
-    ]);
-}
+        // Configuration Inertia pour partager les données utilisateur
+        Inertia::share([
+            'auth' => [
+                'user' => function () {
+                    $user = Auth::user();
+                    return $user ? [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'is_admin' => $user->is_admin ?? false,
+                        'avatar_url' => $user->avatar_url ?? null,
+                    ] : null;
+                },
+            ],
+        ]);
     }
-
+}

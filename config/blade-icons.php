@@ -7,9 +7,10 @@ return [
     | Icon Sets
     |--------------------------------------------------------------------------
     */
+
     'sets' => [
-        // 🎯 CORRECTION : Utiliser les icônes du package vendor
         'heroicon' => [
+            // 🎯 CHEMIN CORRECT vers les icônes installées
             'path' => base_path('vendor/blade-ui-kit/blade-heroicons/resources/svg'),
             'prefix' => 'heroicon',
         ],
@@ -20,13 +21,15 @@ return [
     | Default Class
     |--------------------------------------------------------------------------
     */
-    'class' => '',
+
+    'class' => 'w-5 h-5',
 
     /*
     |--------------------------------------------------------------------------
     | Default Icon Path
     |--------------------------------------------------------------------------
     */
+
     'path' => resource_path('svg'),
 
     /*
@@ -34,6 +37,7 @@ return [
     | Fallback Icon
     |--------------------------------------------------------------------------
     */
+
     'fallback' => null,
 
     /*
@@ -41,9 +45,10 @@ return [
     | Icon Attributes
     |--------------------------------------------------------------------------
     */
+
     'attributes' => [
-        'width' => 24,
-        'height' => 24,
+        'width' => 20,
+        'height' => 20,
         'fill' => 'currentColor',
     ],
 ];
