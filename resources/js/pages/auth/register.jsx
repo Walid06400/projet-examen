@@ -1,133 +1,154 @@
-import React from "react";
-import { Head, useForm, Link } from "@inertiajs/react";
-import { LoaderCircle } from "lucide-react";
-
-import InputError from "@/components/input-error";
-import TextLink from "@/components/text-link";
-import Button from "@/components/Button";
-import Input from "@/components/Input";
-import Label from "@/components/Label";
-import AuthLayout from "@/layouts/auth-layout";
+import { useEffect, useState } from 'react';
+import { Head, useForm } from '@inertiajs/react';
+import AuthLayout from '@/layouts/auth-layout';
+import InputError from '@/components/input-error';
+import TextLink from '@/components/text-link';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Label from '@/components/ui/Label';
+import SuccessModal from '@/components/ui/SuccessModal'; // ✅ AJOUT MODAL
 
 export default function Register() {
-  const { data, setData, post, processing, errors, reset } = useForm({
-    name: "",
-    email: "",
-    password: "",
-    password_confirmation: "",
-  });
-
-  const submit = (e) => {
-    e.preventDefault();
-    post(route("register"), {
-      onFinish: () => reset("password", "password_confirmation"),
+    const { data, setData, post, processing, errors, reset } = useForm({
+        name: '',
+        email: '',
+        password: '',
+        password_confirmation: '',
     });
-  };
 
-  return (
-    <AuthLayout
-      title="Créer un compte"
-      description="Entrez vos informations pour créer votre compte"
-    >
-      <Head title="Inscription" />
-   
-      <form className="flex flex-col gap-6" onSubmit={submit}>
-        <div className="grid gap-6">
-          <div className="grid gap-2">
-            <Label htmlFor="name">Nom</Label>
-            <Input
-              id="name"
-              type="text"
-              required
-              autoFocus
-              tabIndex={1}
-              autoComplete="name"
-              value={data.name}
-              onChange={(e) => setData("name", e.target.value)}
-              disabled={processing}
-              placeholder="Nom complet"
+    // ✅ ÉTAT POUR LA MODAL
+    const [modal, setModal] = useState({
+        open: false,
+        message: '',
+        type: 'success'
+    });
+
+    useEffect(() => {
+        return () => {
+            reset('password', 'password_confirmation');
+        };
+    }, []);
+
+    const submit = (e) => {
+        e.preventDefault();
+        post('/register', { // ✅ CORRIGÉ : URL directe
+            onSuccess: () => {
+                setModal({
+                    open: true,
+                    message: 'Compte créé avec succès ! Bienvenue sur MAOlogie !',
+                    type: 'success'
+                });
+            },
+            onError: () => {
+                setModal({
+                    open: true,
+                    message: 'Erreur lors de la création du compte. Vérifiez les informations saisies.',
+                    type: 'error'
+                });
+            }
+        });
+    };
+
+    return (
+        <AuthLayout>
+            <Head title="Inscription" />
+
+            {/* ✅ MODAL DE NOTIFICATION */}
+            <SuccessModal
+                open={modal.open}
+                close={() => setModal({ ...modal, open: false })}
+                message={modal.message}
+                type={modal.type}
             />
-            <InputError message={errors.name} className="mt-2" />
-          </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="email">Adresse email</Label>
-            <Input
-              id="email"
-              type="email"
-              required
-              tabIndex={2}
-              autoComplete="email"
-              value={data.email}
-              onChange={(e) => setData("email", e.target.value)}
-              disabled={processing}
-              placeholder="email@example.com"
-            />
-            <InputError message={errors.email} />
-          </div>
+            <div className="w-full max-w-md">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">Inscription</h1>
+                    <p className="text-gray-600 mt-2">
+                        Créez votre compte MAOlogie gratuitement
+                    </p>
+                </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="password">Mot de passe</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              tabIndex={3}
-              autoComplete="new-password"
-              value={data.password}
-              onChange={(e) => setData("password", e.target.value)}
-              disabled={processing}
-              placeholder="Mot de passe"
-            />
-            <InputError message={errors.password} />
-          </div>
+                <form onSubmit={submit} className="space-y-6">
+                    <div>
+                        <Label htmlFor="name" required>Nom complet</Label>
+                        <Input
+                            id="name"
+                            name="name"
+                            value={data.name}
+                            autoComplete="name"
+                            placeholder="Votre nom complet"
+                            error={!!errors.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                        />
+                        <InputError message={errors.name} />
+                    </div>
 
-          <div className="grid gap-2">
-            <Label htmlFor="password_confirmation">Confirmer le mot de passe</Label>
-            <Input
-              id="password_confirmation"
-              type="password"
-              required
-              tabIndex={4}
-              autoComplete="new-password"
-              value={data.password_confirmation}
-              onChange={(e) => setData("password_confirmation", e.target.value)}
-              disabled={processing}
-              placeholder="Confirmer le mot de passe"
-            />
-            <InputError message={errors.password_confirmation} />
-          </div>
+                    <div>
+                        <Label htmlFor="email" required>Email</Label>
+                        <Input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={data.email}
+                            autoComplete="username"
+                            placeholder="votre@email.com"
+                            error={!!errors.email}
+                            onChange={(e) => setData('email', e.target.value)}
+                        />
+                        <InputError message={errors.email} />
+                    </div>
 
-          <Button
-            type="submit"
-            className="mt-2 w-full"
-            tabIndex={5}
-            disabled={processing}
-          >
-            {processing && (
-              <LoaderCircle className="h-4 w-4 animate-spin mr-1 inline" />
-            )}
-            Créer le compte
-          </Button>
-        </div>
+                    <div>
+                        <Label htmlFor="password" required>Mot de passe</Label>
+                        <Input
+                            id="password"
+                            type="password"
+                            name="password"
+                            value={data.password}
+                            autoComplete="new-password"
+                            placeholder="••••••••"
+                            error={!!errors.password}
+                            onChange={(e) => setData('password', e.target.value)}
+                        />
+                        <InputError message={errors.password} />
+                    </div>
 
-        <div className="text-muted-foreground text-center text-sm">
-          Vous avez déjà un compte ?{" "}
-          <TextLink href={route("login")} tabIndex={6}>
-            Se connecter
-          </TextLink>
-        </div>
-      </form>
-         {/* Bouton retour à l'accueil */}
-    <div className="text-center mt-4">
-  <Link
-    href="/"
-    className="inline-flex items-center mb-4 text-indigo-600 hover:underline font-medium transition"
-    tabIndex={0}
-  >
-    Retour à l'accueil
-  </Link>
-</div>
-    </AuthLayout>
-  );
+                    <div>
+                        <Label htmlFor="password_confirmation" required>
+                            Confirmer le mot de passe
+                        </Label>
+                        <Input
+                            id="password_confirmation"
+                            type="password"
+                            name="password_confirmation"
+                            value={data.password_confirmation}
+                            autoComplete="new-password"
+                            placeholder="••••••••"
+                            error={!!errors.password_confirmation}
+                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                        />
+                        <InputError message={errors.password_confirmation} />
+                    </div>
+
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="w-full"
+                    >
+                        {processing ? 'Création du compte...' : 'Créer mon compte'}
+                    </Button>
+                </form>
+
+                <div className="mt-6 text-center">
+                    <p className="text-sm text-gray-600">
+                        Déjà un compte ?{' '}
+                        <TextLink href="/login"> {/* ✅ CORRIGÉ : URL directe */}
+                            Se connecter
+                        </TextLink>
+                    </p>
+                </div>
+            </div>
+        </AuthLayout>
+    );
 }

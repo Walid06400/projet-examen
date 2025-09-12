@@ -1,13 +1,13 @@
+import { useEffect, useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-
+import AuthLayout from '@/layouts/auth-layout';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
-import  Button  from '@/components/button';
-import  Checkbox  from '@/components/Checkbox';
-import  Input  from '@/components/input';
-import  Label  from '@/components/label';
-import AuthLayout from '@/layouts/auth-layout';
+import Button from '@/components/ui/Button';
+import Checkbox from '@/components/ui/Checkbox';
+import Input from '@/components/ui/Input';
+import Label from '@/components/ui/Label';
+import SuccessModal from '@/components/ui/SuccessModal'; // ✅ AJOUT MODAL
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -16,83 +16,136 @@ export default function Login({ status, canResetPassword }) {
         remember: false,
     });
 
+    // ✅ ÉTAT POUR LA MODAL
+    const [modal, setModal] = useState({
+        open: false,
+        message: '',
+        type: 'success'
+    });
+
+    useEffect(() => {
+        return () => {
+            reset('password');
+        };
+    }, []);
+
     const submit = (e) => {
         e.preventDefault();
-        post(route('login'), {
-            onFinish: () => reset('password'),
+        post('/login', { // ✅ CORRIGÉ : URL directe au lieu de route()
+            onSuccess: () => {
+                // ✅ AFFICHAGE MODAL DE SUCCÈS
+                setModal({
+                    open: true,
+                    message: 'Connexion réussie ! Redirection en cours...',
+                    type: 'success'
+                });
+            },
+            onError: () => {
+                // ✅ AFFICHAGE MODAL D'ERREUR
+                setModal({
+                    open: true,
+                    message: 'Erreur de connexion. Vérifiez vos identifiants.',
+                    type: 'error'
+                });
+            }
         });
     };
 
     return (
-        <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
-            <Head title="Log in" />
+        <AuthLayout>
+            <Head title="Connexion" />
 
-            <form className="flex flex-col gap-6" onSubmit={submit}>
-                <div className="grid gap-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+            {/* ✅ MODAL DE NOTIFICATION */}
+            <SuccessModal
+                open={modal.open}
+                close={() => setModal({ ...modal, open: false })}
+                message={modal.message}
+                type={modal.type}
+            />
+
+            <div className="w-full max-w-md">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">Connexion</h1>
+                    <p className="text-gray-600 mt-2">
+                        Connectez-vous à votre compte MAOlogie
+                    </p>
+                </div>
+
+                {status && (
+                    <div className="mb-4 font-medium text-sm text-green-600">
+                        {status}
+                    </div>
+                )}
+
+                <form onSubmit={submit} className="space-y-6">
+                    <div>
+                        <Label htmlFor="email" required>Email</Label>
                         <Input
                             id="email"
                             type="email"
-                            required
-                            autoFocus
-                            tabIndex={1}
-                            autoComplete="email"
+                            name="email"
                             value={data.email}
+                            autoComplete="username"
+                            placeholder="votre@email.com"
+                            error={!!errors.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
                         />
                         <InputError message={errors.email} />
                     </div>
 
-                    <div className="grid gap-2">
-                        <div className="flex items-center">
-                            <Label htmlFor="password">Password</Label>
-                            {canResetPassword && (
-                                <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
-                                    Forgot password?
-                                </TextLink>
-                            )}
-                        </div>
+                    <div>
+                        <Label htmlFor="password" required>Mot de passe</Label>
                         <Input
                             id="password"
                             type="password"
-                            required
-                            tabIndex={2}
-                            autoComplete="current-password"
+                            name="password"
                             value={data.password}
+                            autoComplete="current-password"
+                            placeholder="••••••••"
+                            error={!!errors.password}
                             onChange={(e) => setData('password', e.target.value)}
-                            placeholder="Password"
                         />
                         <InputError message={errors.password} />
                     </div>
 
-                    <div className="flex items-center space-x-3">
-                        <Checkbox
-                            id="remember"
-                            name="remember"
-                            checked={data.remember}
-                            onClick={() => setData('remember', !data.remember)}
-                            tabIndex={3}
-                        />
-                        <Label htmlFor="remember">Remember me</Label>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <Checkbox
+                                id="remember"
+                                name="remember"
+                                checked={data.remember}
+                                onChange={(e) => setData('remember', e.target.checked)}
+                            />
+                            <Label htmlFor="remember" className="ml-2 mb-0">
+                                Se souvenir de moi
+                            </Label>
+                        </div>
+
+                        {canResetPassword && (
+                            <TextLink href="/forgot-password"> {/* ✅ CORRIGÉ : URL directe */}
+                                Mot de passe oublié ?
+                            </TextLink>
+                        )}
                     </div>
 
-                    <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Log in
+                    <Button
+                        type="submit"
+                        disabled={processing}
+                        className="w-full"
+                    >
+                        {processing ? 'Connexion...' : 'Se connecter'}
                     </Button>
-                </div>
+                </form>
 
-                <div className="text-muted-foreground text-center text-sm">
-                    Don't have an account?{' '}
-                    <TextLink href={route('register')} tabIndex={5}>
-                        Sign up
-                    </TextLink>
+                <div className="mt-6 text-center">
+                    <p className="text-sm text-gray-600">
+                        Pas encore de compte ?{' '}
+                        <TextLink href="/register"> {/* ✅ CORRIGÉ : URL directe */}
+                            Créer un compte
+                        </TextLink>
+                    </p>
                 </div>
-            </form>
-
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
+            </div>
         </AuthLayout>
     );
 }

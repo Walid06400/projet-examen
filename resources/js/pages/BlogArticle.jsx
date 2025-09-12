@@ -1,123 +1,156 @@
-import React, { useState } from "react";
-import { Link, usePage } from "@inertiajs/react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+// resources/js/pages/BlogArticle.jsx - AVEC COMMENTAIRES
 
+import React from 'react';
+import { Head, useForm, usePage, Link } from '@inertiajs/react';
+import AppLayout from '@/layouts/app-layout';
 
-// Liste des articles mock (même slugs que dans Blog.jsx)
-const allArticles = [
-  {
-    title: "Comprendre la MAO",
-    slug: "comprendre-mao",
-    image: "/images/articles/MAO.png",
-    content: `
-      <p>La MAO (Musique Assistée par Ordinateur) est l’ensemble des techniques et outils permettant de composer, enregistrer, mixer et produire de la musique à l’aide d’un ordinateur.</p>
-      <p>Dans ce blog, tu trouveras des guides, astuces et ressources pour progresser à chaque étape de ton parcours MAO !</p>
-    `,
-    category: "Fondamentaux",
-  },
-  {
-    title: "Mixage : astuces pro",
-    slug: "mixage-astuces-pro",
-    image: "/images/articles/Mixage-astuce.png",
-    content: `
-      <p>Voici 5 techniques pour améliorer vos mix rapidement : ...</p>
-    `,
-    category: "Mixage",
-  },
-  {
-    title: "Instruments virtuels",
-    slug: "instruments-virtuels",
-    image: "/images/articles/vst-plugins.png",
-    content: `
-      <p>Les meilleurs plugins gratuits de 2025 sont ...</p>
-    `,
-    category: "Logiciels",
-  },
+export default function BlogArticle() {
+    const { article, comments, canComment } = usePage().props;
+    
+    const { data, setData, post, reset, processing, errors } = useForm({
+        content: '',
+        article_id: article.id,
+    });
 
-  { 
-    title: "Premiers pas en production",
-    slug: "premiers-pas-production",
-    image: "/images/categories/productionMAO.png",
-    content: `
-      <p>Comment débuter une production musicale de zéro ? Voici les étapes clés : ...</p>
-    `,
-    category: "Production",
-  },
+    const submitComment = (e) => {
+        e.preventDefault();
+        post(route('comments.store'), {
+            preserveScroll: true,
+            onSuccess: () => reset('content'),
+        });
+    };
 
-  {
-    title: "Créer ses propres instruments",
-    slug: "creer-instruments",
-    image: "/images/categories/crée-vst.jfif",
-    content: `
-      <p>Découvre comment programmer et utiliser tes propres VST pour personnaliser ton son !</p>
-    `,
-    category: "Programmation",
-  },
-    // Ajoute tous les articles mock ici
-];
-
-export default function BlogArticle({ slug }) {
-  // Récupère le slug passé par la route Inertia
-  // (Si tu utilises usePage() : const { slug } = usePage().props;)
-  const article = allArticles.find((a) => a.slug === slug);
-
-
-  // Mock des commentaires
-  const [comments, setComments] = useState([
-    { author: "Alice", content: "Super article, merci !", date: "2025-06-01" },
-    { author: "Bob", content: "Très clair, j’attends la suite.", date: "2025-06-02" },
-  ]);
-  const [newComment, setNewComment] = useState("");
-
-  const handleComment = (e) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-    setComments([
-      ...comments,
-      {
-        author: "Vous",
-        content: newComment,
-        date: new Date().toLocaleDateString("fr-FR"),
-      },
-    ]);
-    setNewComment("");
-  };
-
-  if (!article) {
     return (
-      <div className="max-w-3xl mx-auto py-12 px-4 text-center">
-        <h1 className="text-2xl font-bold mb-4 text-red-600">Article introuvable</h1>
-        <Link href="/blog" className="text-indigo-600 hover:underline font-semibold">
-          ← Retour au blog
-        </Link>
-      </div>
-    );
-  }
+        <AppLayout>
+            <Head title={article.title} />
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex flex-col">
-      <Navbar />
-      <main className="flex-1 max-w-3xl mx-auto py-12 px-4">
-        <Link
-          href="/blog"
-          className="inline-block mb-6 text-indigo-600 hover:underline font-semibold"
-        >
-          ← Retour au blog
-        </Link>
-        <img
-          src={article.image}
-          alt={article.title}
-          className="w-full h-64 object-cover rounded-xl mb-6"
-        />
-        <span className="text-indigo-600 text-xs uppercase font-bold">{article.category}</span>
-        <h1 className="text-3xl font-extrabold my-4 text-gray-900">{article.title}</h1>
-        <div
-          className="text-gray-700 leading-relaxed prose prose-indigo max-w-none"
-          dangerouslySetInnerHTML={{ __html: article.content }}
-        />
-      </main>
-      <Footer />
-    </div>
-  );
+            <div className="container mx-auto py-12 px-4 max-w-4xl">
+                {/* Article */}
+                <article className="mb-12">
+                    {article.image_url && (
+                        <img
+                            src={article.image_url}
+                            alt={article.title}
+                            className="w-full rounded-xl mb-8"
+                        />
+                    )}
+
+                    <div className="mb-6">
+                        <Link
+                            href={`/blog/category/${article.category.slug}`}
+                            className="text-purple-600 text-sm font-medium mb-2 inline-block"
+                        >
+                            {article.category.name}
+                        </Link>
+                        <h1 className="text-4xl font-bold text-gray-800 mb-4">
+                            {article.title}
+                        </h1>
+                        <div className="text-gray-600 text-sm">
+                            Par {article.author} • {article.created_at}
+                        </div>
+                    </div>
+
+                    <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{ __html: article.content }}
+                    />
+                </article>
+
+                {/* Section commentaires */}
+                <section className="border-t pt-8">
+                    <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                        Commentaires ({comments.length})
+                    </h2>
+
+                    {/* Formulaire d'ajout */}
+                    {canComment ? (
+                        <form onSubmit={submitComment} className="mb-8 bg-gray-50 p-6 rounded-lg">
+                            <div className="mb-4">
+                                <label className="block text-gray-700 font-medium mb-2">
+                                    Votre commentaire
+                                </label>
+                                <textarea
+                                    value={data.content}
+                                    onChange={e => setData('content', e.target.value)}
+                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                                    rows="4"
+                                    placeholder="Partagez votre opinion..."
+                                />
+                                {errors.content && (
+                                    <div className="text-red-500 text-sm mt-1">{errors.content}</div>
+                                )}
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50"
+                            >
+                                {processing ? 'Publication...' : 'Publier le commentaire'}
+                            </button>
+                        </form>
+                    ) : (
+                        <div className="mb-8 p-4 bg-gray-100 rounded-lg text-center">
+                            <p className="text-gray-600">
+                                <Link href="/login" className="text-purple-600 hover:underline">
+                                    Connectez-vous
+                                </Link>{' '}
+                                pour laisser un commentaire
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Liste des commentaires */}
+                    <div className="space-y-6">
+                        {comments.length > 0 ? (
+                            comments.map((comment) => (
+                                <div key={comment.id} className="border-l-4 border-purple-500 pl-6 py-4">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="text-sm text-gray-600">
+                                            <span className="font-medium text-gray-800">
+                                                {comment.user.name}
+                                            </span>
+                                            {' • '}
+                                            {comment.created_at}
+                                        </div>
+                                        {comment.can_delete && (
+                                            <Link
+                                                href={route('comments.destroy', comment.id)}
+                                                method="delete"
+                                                as="button"
+                                                className="text-red-500 text-sm hover:underline"
+                                                onClick={(e) => {
+                                                    if (!confirm('Supprimer ce commentaire ?')) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            >
+                                                Supprimer
+                                            </Link>
+                                        )}
+                                    </div>
+                                    <p className="text-gray-700 leading-relaxed">
+                                        {comment.content}
+                                    </p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-gray-500 text-center py-8">
+                                Aucun commentaire pour le moment. Soyez le premier à commenter !
+                            </p>
+                        )}
+                    </div>
+                </section>
+
+                {/* Navigation */}
+                <div className="mt-12 text-center">
+                    <Link
+                        href="/blog"
+                        className="text-purple-600 hover:underline"
+                    >
+                        ← Retour au blog
+                    </Link>
+                </div>
+            </div>
+        </AppLayout>
+    );
 }

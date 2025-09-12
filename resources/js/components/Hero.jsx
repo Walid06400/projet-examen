@@ -1,6 +1,7 @@
+// resources/js/components/Hero.jsx
 import React from "react";
 import { motion } from "framer-motion";
-import { Button } from "./Button"; // Assurez-vous que le chemin est correct
+import { Link } from "@inertiajs/react";
 
 const heroVariants = {
   hidden: { opacity: 0, scale: 0.9 },
@@ -11,49 +12,38 @@ const heroVariants = {
   },
 };
 
-// const pulseButton = {
-//   animate: {
-//     scale: [1, 1.15, 1],
-//     transition: {
-//       duration: 1.5,
-//       repeat: Infinity,
-//       ease: "easeInOut",
-//     },
-//   },
-// };
-
-const Hero = () => {
+export default function Hero() {
   return (
-    <section className="relative h-[150vh] md:h-[150vh] lg:h-[85vh] flex items-center justify-center overflow-hidden">
-      {/* Image de fond */}
-      <img
-        src="/images/Maologie-.webp"
-        alt="Fond Hero"
-        className="absolute inset-0 w-full h-full object-cover object-top z-0"
-      />
-
-    
-{/* Texte d'accroche + bouton animé */}
-      <div className="relative z-10 text-center px-4">
-        <h2 className="text-white text-2xl md:text-3xl font-bold mb-6 drop-shadow-lg">
-          Rejoignez notre communauté dès aujourd’hui !
-        </h2>
-
-        <motion.div
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <Button
-            className=" hover:opacity-100 hover:shadow-2xl transform hover:scale-105 transition-all duration-300 ease-out px-10 py-4"
-            type="button"
-            onClick={() => (window.location.href = "/register")}
+    <section className="relative bg-gradient-to-r from-indigo-600 to-purple-600 text-white overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/images/cardstudio.png" 
+          alt="Studio MAO" 
+          className="w-full h-full object-cover opacity-20 mix-blend-overlay"
+        />
+      </div>
+      
+      <div className="container mx-auto px-4 py-20 md:py-32 relative z-10">
+        <div className="max-w-3xl">
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={heroVariants}
+            className="space-y-6"
           >
-            Inscription
-          </Button>
-        </motion.div>
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              Devenez un expert en production musicale
+            </h1>
+            {/* ✅ CORRECTION : route('blog') → '/blog' */}
+            <Link 
+              href="/blog" 
+              className="inline-block bg-transparent border-2 border-white hover:bg-white/10 px-8 py-3 rounded-md font-medium text-lg transition-colors duration-200 text-center"
+            >
+              Lire le blog
+            </Link>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
-};
-
-export default Hero;
+}

@@ -1,115 +1,44 @@
 <?php
 
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\CommentController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\Settings\PasswordController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Page d'accueil
-Route::get('/', fn ()=> Inertia::render('welcome'))->name('home');
+Route::get('/', [WelcomeController::class,'index'])->name('welcome');
 
-// Authentification
-Route::get('/login', fn ()=> Inertia::render('/auth/login'))->name('login');
+Route::get('/blog', [BlogController::class,'index'])->name('blog');
+Route::get('/blog/category/{slug}',[BlogController::class,'category'])->name('blog.category');
+Route::get('/blog/{slug}',[BlogController::class,'show'])->name('blog.show');
 
-Route::get('/register', fn()=> Inertia::render('/auth/register'))->name('register');
-
-// Liste du blog
-Route::get('/blog', function () {
-    return Inertia::render('Blog');
-})->name('blog');
-
-
-// Liste d'articles par catégorie
-Route::get('/blog/categorie/{slug}', function ($slug) {
-    return Inertia::render('BlogCategory', ['slug' => $slug]);
-})->name('blog.category');
-
-
-// Article individuel
-Route::get('/blog/{slug}', function ($slug) {
-    return Inertia::render('BlogArticle', ['slug' => $slug]);
-})->name('blog.article');
-
-
-
-// Formations (liste)
-Route::get('/formations', function (){
-    return Inertia::render('Formations');
-})->name('formations');
-
-// Détail d'une formation
-Route::get('/formations/{slug}', function ($slug) {
-    return Inertia::render('FormationDetail', ['slug' => $slug]);
-})->name('formations.detail');
-
-
-Route::get('/forum', function () {
-    return Inertia::render('Forum');
-})->name('forum');
-
-// Création d'un sujet (doit être AVANT la route dynamique)
-Route::get('/forum/new', fn() => Inertia::render('NewTopic'))->name('forum.new');
-
-// Détail d'un sujet
-Route::get('/forum/{id}', function ($id) {
-    return Inertia::render('ForumTopic', ['id' => $id]);
-})->name('forum.detail');
-
-// Panier
-Route::get('/cart',function () {
-    return Inertia::render('Cart');
-})->name('cart');
-
-// Paiement fictif (checkout)
-Route::get('/checkout', function () {
-    return Inertia::render('Checkout');
-})->name('checkout');
-
-Route::get('/checkout/success', function () {
-    return Inertia::render('CheckoutSuccess');
-})->name('checkout.success');
-
-// Contact
-Route::get('/contact', function () {
-    return Inertia::render('Contact');
-})->name('contact');
-
-// Routes protégées par middleware
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/profil', function () {
-        return Inertia::render('Profil');
-    })->name('profil');
+Route::middleware('auth')->group(function(){
+    Route::post('/comments',[CommentController::class,'store'])->name('comments.store');
+    Route::delete('/comments/{comment}',[CommentController::class,'destroy'])->name('comments.destroy');
 });
 
-// Dashboard admin ou utilisateur
-Route::get('/dashboard', function () {
-    // Tu peux ici ajouter une vérification du rôle si nécessaire
-    return Inertia::render('Admin');
-})->name('dashboard');
+Route::get('/contact',fn()=>Inertia::render('Contact'))->name('contact');
+Route::get('/legal',fn()=>Inertia::render('Legal'))->name('legal');
+Route::get('/cgu',fn()=>Inertia::render('CGU'))->name('cgu');
 
-// Pages légales
-Route::get('/cgu', function () {
-    return Inertia::render('CGU');
-})->name('cgu');
-
-Route::get('/legal', function () {
-    return Inertia::render('Legal');
-})->name('legal');
-
-Route::get('/privacy', function () {
-    return Inertia::render('Privacy');
-})->name('privacy');
-
-// 404 personnalisée (optionnel)
-Route::fallback(function () {
-    return Inertia::render('NotFound');
+Route::middleware('auth')->group(function(){
+    Route::get('/dashboard',[DashboardController::class,'index'])->name('dashboard');
+    Route::get('/settings/profile',[ProfileController::class,'edit'])->name('profile.edit');
+    Route::post('/profile',[ProfileController::class,'update'])->name('profile.update');
+    Route::post('/user/avatar/update',[ProfileController::class,'updateAvatar'])->name('user.avatar.update');
+    Route::delete('/profile',[ProfileController::class,'destroy'])->name('profile.destroy');
+    Route::get('/settings/password',[PasswordController::class,'edit'])->name('password.edit');
+    Route::put('/password',[PasswordController::class,'update'])->name('password.update');
+    Route::post('/logout',[AuthenticatedSessionController::class,'destroy'])->name('logout');
 });
 
-// Inclusion des routes supplémentaires
-require __DIR__.'/settings.php';
+
+Route::fallback(fn()=>Inertia::render('NotFound'));
+
+
 require __DIR__.'/auth.php';
-
-
-
-
-
-
 
