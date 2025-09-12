@@ -1,14 +1,14 @@
 <?php
-// app/Models/User.php
+// app/Models/User.php - Version optimisée
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 
@@ -21,10 +21,9 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'password',
         'is_admin',
-        'status',
         'avatar',
         'bio',
-        'location',
+        'location'
     ];
 
     protected $hidden = [
@@ -36,17 +35,15 @@ class User extends Authenticatable implements FilamentUser
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_admin' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
+    // 🎯 IMPORTANT : Ajouter avatar_url aux attributs automatiquement disponibles
     protected $appends = [
         'avatar_url',
-        'default_avatar',
     ];
 
     /**
-     * ✅ RELATION - Articles écrits par l'utilisateur (si admin)
+     * ✅ RELATION - Articles écrits par l'utilisateur
      */
     public function articles(): HasMany
     {
@@ -62,60 +59,37 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * ✅ ACCESSEUR - URL complète de l'avatar avec vérification d'existence
+     * ✅ ACCESSEUR pour URL complet de l'avatar
+     * EXPLICATION : Un accesseur Laravel transforme automatiquement les données
+     * Ici, on convertit le chemin de fichier en URL complète accessible par le navigateur
      */
     public function getAvatarUrlAttribute(): string
     {
-        // Vérifier si l'avatar existe dans le stockage
+        // Si l'utilisateur a un avatar uploadé ET que le fichier existe
         if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
             return asset('storage/' . $this->avatar);
         }
 
-        // Retourner l'avatar par défaut
+        // Sinon, retourner l'avatar par défaut avec initiales
         return $this->getDefaultAvatarAttribute();
     }
 
     /**
-     * ✅ ACCESSEUR - Avatar par défaut avec initiales (UI Avatars)
+     * ✅ ACCESSEUR pour avatar par défaut avec initiales
+     * EXPLICATION : Utilise un service externe (ui-avatars.com) pour générer
+     * un avatar avec les initiales si pas d'image uploadée
      */
     public function getDefaultAvatarAttribute(): string
     {
-        return "https://ui-avatars.com/api/" . http_build_query([
-            'name' => $this->name,
-            'color' => '7c3aed',
-            'background' => 'ede9fe',
-            'size' => '300',
-            'font-size' => '0.33',
-            'rounded' => 'true',
-            'bold' => 'true',
-        ]);
+        return "https://ui-avatars.com/api/?name=" . urlencode($this->name) .
+            "&color=7c3aed&background=ede9fe&size=300";
     }
 
     /**
-     * ✅ ACCESSEUR - Initiales pour les avatars
-     */
-    public function getInitialsAttribute(): string
-    {
-        $words = explode(' ', trim($this->name));
-        if (count($words) >= 2) {
-            return strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
-        }
-        return strtoupper(substr($this->name, 0, 2));
-    }
-
-    /**
-     * ✅ Accès au panel Filament (admins uniquement)
+     * Accès admin Filament
      */
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->is_admin ?? false;
-    }
-
-    /**
-     * ✅ Vérifier si l'utilisateur est administrateur
-     */
-    public function isAdmin(): bool
-    {
-        return $this->is_admin === true;
     }
 }

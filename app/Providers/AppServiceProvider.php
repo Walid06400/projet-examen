@@ -2,9 +2,10 @@
 
 namespace App\Providers;
 
-use Inertia\Inertia;               
+use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use BladeUI\Icons\BladeIconsServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+          $this->app->register(BladeIconsServiceProvider::class);
     }
 
     /**
