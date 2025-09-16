@@ -1,154 +1,110 @@
-import { useEffect, useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
-import AuthLayout from '@/layouts/auth-layout';
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Label from '@/components/ui/Label';
-import SuccessModal from '@/components/ui/SuccessModal'; // ✅ AJOUT MODAL
+import { useEffect, useState } from "react";
+import { Head, useForm, router } from "@inertiajs/react";
+import InputError from "@/components/input-error";
+import TextLink from "@/components/text-link";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Label from "@/components/ui/Label";
+import SuccessModal from "@/components/ui/SuccessModal";
+import AuthLayout from "@/layouts/auth-layout";
 
 export default function Register() {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        email: '',
-        password: '',
-        password_confirmation: '',
+  const { data, setData, post, processing, errors, reset } = useForm({
+    name: "",
+    email: "",
+    password: "",
+    password_confirmation: "",
+  });
+
+  const [modal, setModal] = useState({ open: false, message: "" });
+
+  useEffect(() => reset("password", "password_confirmation"), []);
+
+  useEffect(() => {
+    if (modal.open) {
+      const timer = setTimeout(() => router.visit("/blog"), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [modal.open]);
+
+  const submit = (e) => {
+    e.preventDefault();
+    post("/register", {
+      onSuccess: () => setModal({ open: true, message: "Compte créé !" }),
+      onError: () => setModal({ open: true, message: "Échec de création." }),
     });
+  };
 
-    // ✅ ÉTAT POUR LA MODAL
-    const [modal, setModal] = useState({
-        open: false,
-        message: '',
-        type: 'success'
-    });
+  return (
+    <AuthLayout>
+      <Head title="Inscription" />
+      <SuccessModal open={modal.open} message={modal.message} redirectTo="/blog" />
 
-    useEffect(() => {
-        return () => {
-            reset('password', 'password_confirmation');
-        };
-    }, []);
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+          <h1 className="text-2xl font-bold text-center text-gray-800">
+            Créer un compte
+          </h1>
 
-    const submit = (e) => {
-        e.preventDefault();
-        post('/register', { // ✅ CORRIGÉ : URL directe
-            onSuccess: () => {
-                setModal({
-                    open: true,
-                    message: 'Compte créé avec succès ! Bienvenue sur MAOlogie !',
-                    type: 'success'
-                });
-            },
-            onError: () => {
-                setModal({
-                    open: true,
-                    message: 'Erreur lors de la création du compte. Vérifiez les informations saisies.',
-                    type: 'error'
-                });
-            }
-        });
-    };
-
-    return (
-        <AuthLayout>
-            <Head title="Inscription" />
-
-            {/* ✅ MODAL DE NOTIFICATION */}
-            <SuccessModal
-                open={modal.open}
-                close={() => setModal({ ...modal, open: false })}
-                message={modal.message}
-                type={modal.type}
-            />
-
-            <div className="w-full max-w-md">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Inscription</h1>
-                    <p className="text-gray-600 mt-2">
-                        Créez votre compte MAOlogie gratuitement
-                    </p>
-                </div>
-
-                <form onSubmit={submit} className="space-y-6">
-                    <div>
-                        <Label htmlFor="name" required>Nom complet</Label>
-                        <Input
-                            id="name"
-                            name="name"
-                            value={data.name}
-                            autoComplete="name"
-                            placeholder="Votre nom complet"
-                            error={!!errors.name}
-                            onChange={(e) => setData('name', e.target.value)}
-                        />
-                        <InputError message={errors.name} />
-                    </div>
-
-                    <div>
-                        <Label htmlFor="email" required>Email</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            name="email"
-                            value={data.email}
-                            autoComplete="username"
-                            placeholder="votre@email.com"
-                            error={!!errors.email}
-                            onChange={(e) => setData('email', e.target.value)}
-                        />
-                        <InputError message={errors.email} />
-                    </div>
-
-                    <div>
-                        <Label htmlFor="password" required>Mot de passe</Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            name="password"
-                            value={data.password}
-                            autoComplete="new-password"
-                            placeholder="••••••••"
-                            error={!!errors.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                        />
-                        <InputError message={errors.password} />
-                    </div>
-
-                    <div>
-                        <Label htmlFor="password_confirmation" required>
-                            Confirmer le mot de passe
-                        </Label>
-                        <Input
-                            id="password_confirmation"
-                            type="password"
-                            name="password_confirmation"
-                            value={data.password_confirmation}
-                            autoComplete="new-password"
-                            placeholder="••••••••"
-                            error={!!errors.password_confirmation}
-                            onChange={(e) => setData('password_confirmation', e.target.value)}
-                        />
-                        <InputError message={errors.password_confirmation} />
-                    </div>
-
-                    <Button
-                        type="submit"
-                        disabled={processing}
-                        className="w-full"
-                    >
-                        {processing ? 'Création du compte...' : 'Créer mon compte'}
-                    </Button>
-                </form>
-
-                <div className="mt-6 text-center">
-                    <p className="text-sm text-gray-600">
-                        Déjà un compte ?{' '}
-                        <TextLink href="/login"> {/* ✅ CORRIGÉ : URL directe */}
-                            Se connecter
-                        </TextLink>
-                    </p>
-                </div>
+          <form onSubmit={submit} className="space-y-5">
+            <div>
+              <Label htmlFor="name">Nom complet</Label>
+              <Input
+                id="name"
+                type="text"
+                value={data.name}
+                onChange={(e) => setData("name", e.target.value)}
+                error={!!errors.name}
+              />
+              <InputError message={errors.name} />
             </div>
-        </AuthLayout>
-    );
+
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={data.email}
+                onChange={(e) => setData("email", e.target.value)}
+                error={!!errors.email}
+              />
+              <InputError message={errors.email} />
+            </div>
+
+            <div>
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input
+                id="password"
+                type="password"
+                value={data.password}
+                onChange={(e) => setData("password", e.target.value)}
+                error={!!errors.password}
+              />
+              <InputError message={errors.password} />
+            </div>
+
+            <div>
+              <Label htmlFor="password_confirmation">Confirmer mot de passe</Label>
+              <Input
+                id="password_confirmation"
+                type="password"
+                value={data.password_confirmation}
+                onChange={(e) => setData("password_confirmation", e.target.value)}
+                error={!!errors.password_confirmation}
+              />
+              <InputError message={errors.password_confirmation} />
+            </div>
+
+            <Button type="submit" className="w-full" disabled={processing}>
+              {processing ? "Création…" : "Créer mon compte"}
+            </Button>
+
+            <p className="text-center text-sm text-gray-500">
+              Déjà un compte ? <TextLink href="/login">Se connecter</TextLink>
+            </p>
+          </form>
+        </div>
+      </div>
+    </AuthLayout>
+  );
 }

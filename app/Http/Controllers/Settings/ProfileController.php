@@ -10,13 +10,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use Intervention\Image\ImageManagerStatic as Image;  // ✔️ Import correct v3
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProfileController extends Controller
 {
-
     public function edit(Request $request): Response
     {
         return Inertia::render('Profile/Edit', [
@@ -26,75 +24,65 @@ class ProfileController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
-        try {
-            $validated = $request->validate([
-                'name'     => 'required|string|max:255',
-                'bio'      => 'nullable|string|max:1000',
-                'location' => 'nullable|string|max:255',
-            ]);
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'bio'      => 'nullable|string|max:1000',
+            'location' => 'nullable|string|max:255',
+        ]);
 
-            /** @var User $user */
-            $user = Auth::user();
-            $user->fill($validated);  // ✔️ fill() existe
-            $user->save();           // ✔️ save() existe
+        /** @var User $user */
+        $user = $request->user();
+        $user->fill($validated)->save();
 
-            return back()->with('success', 'Profil mis à jour.');
-        } catch (ValidationException $e) {
-            return back()->withErrors($e->errors())->with('error','Erreur de validation.');
-        } catch (\Exception $e) {
-            Log::error('Profil update error: '.$e->getMessage());
-            return back()->with('error','Erreur lors de la mise à jour.');
-        }
+        return back()->with('success', 'Profil mis à jour.');
     }
 
     public function updateAvatar(Request $request): RedirectResponse
     {
         try {
-            $request->validate(['avatar'=>'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120']);
+            $request->validate([
+                'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            ]);
 
+            /** @var User $user */
             $user = Auth::user();
+
+            // Supprimer l’ancien avatar
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
 
-            $file     = $request->file('avatar');
-            $filename = time().'_'.$user->id.'.jpg';
-            $path     = 'avatars/'.$filename;
+            // Enregistrer le nouveau fichier tel quel
+            $path = $request->file('avatar')->store('avatars', 'public');
 
-            $image = Image::make($file->getRealPath())
-                ->fit(300,300,fn($c)=>$c->upsize())
-                ->encode('jpg',80);
-
-            Storage::disk('public')->put($path, $image->stream());
-
+            // Mettre à jour la BDD
             $user->avatar = $path;
             $user->save();
 
-            return back()->with('success','Avatar mis à jour !');
+            return back()->with('success', 'Avatar mis à jour !');
         } catch (ValidationException $e) {
-            return back()->withErrors($e->errors())->with('error','Fichier invalide.');
+            return back()->withErrors($e->errors())->with('error', 'Fichier invalide.');
         } catch (\Exception $e) {
-            Log::error('Avatar upload error: '.$e->getMessage());
-            return back()->with('error','Erreur upload avatar.');
+            Log::error('Avatar upload error: ' . $e->getMessage());
+            return back()->with('error', 'Erreur upload avatar.');
         }
     }
 
     public function destroy(Request $request): RedirectResponse
     {
-        try {
-            $request->validate(['password'=>'required|current_password']);
-            $user = $request->user();
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-            Auth::logout();
-            $user->delete();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-            return redirect('/')->with('success','Compte supprimé.');
-        } catch (\Exception $e) {
-            Log::error('Account delete error: '.$e->getMessage());
-            return back()->with('error','Erreur suppression compte.');
+        $request->validate(['password' => 'required|current_password']);
+
+        $user = $request->user();
+
+        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+            Storage::disk('public')->delete($user->avatar);
         }
+
+        Auth::logout();
+        $user->delete();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/')->with('success', 'Compte supprimé.');
     }
 }

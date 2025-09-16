@@ -2,11 +2,11 @@
 
 import React from 'react';
 import { Head, useForm, usePage, Link } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
+
 
 export default function BlogArticle() {
     const { article, comments, canComment } = usePage().props;
-    
+
     const { data, setData, post, reset, processing, errors } = useForm({
         content: '',
         article_id: article.id,
@@ -21,7 +21,7 @@ export default function BlogArticle() {
     };
 
     return (
-        <AppLayout>
+        <>
             <Head title={article.title} />
 
             <div className="container mx-auto py-12 px-4 max-w-4xl">
@@ -151,6 +151,6 @@ export default function BlogArticle() {
                     </Link>
                 </div>
             </div>
-        </AppLayout>
+        </>
     );
 }

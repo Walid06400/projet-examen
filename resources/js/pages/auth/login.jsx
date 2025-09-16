@@ -1,151 +1,99 @@
-import { useEffect, useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
-import AuthLayout from '@/layouts/auth-layout';
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
-import Button from '@/components/ui/Button';
-import Checkbox from '@/components/ui/Checkbox';
-import Input from '@/components/ui/Input';
-import Label from '@/components/ui/Label';
-import SuccessModal from '@/components/ui/SuccessModal'; // ✅ AJOUT MODAL
+import { useEffect, useState } from "react";
+import { Head, useForm, router } from "@inertiajs/react";
+import toast from "react-hot-toast";
+import InputError from "@/components/input-error";
+import TextLink from "@/components/text-link";
+import Button from "@/components/ui/Button";
+import Checkbox from "@/components/ui/Checkbox";
+import Input from "@/components/ui/Input";
+import Label from "@/components/ui/Label";
+import AuthLayout from "@/layouts/auth-layout";
 
 export default function Login({ status, canResetPassword }) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
-        password: '',
-        remember: false,
+  const { data, setData, post, processing, errors, reset } = useForm({
+    email: "",
+    password: "",
+    remember: false,
+  });
+
+  useEffect(() => {
+    return () => reset("password");
+  }, []);
+
+  const submit = (e) => {
+    e.preventDefault();
+    post("/login", {
+      onSuccess: () => {
+        toast.success("Connexion réussie !");
+        router.visit("/blog");
+      },
+      onError: () => toast.error("Identifiants invalides"),
     });
+  };
 
-    // ✅ ÉTAT POUR LA MODAL
-    const [modal, setModal] = useState({
-        open: false,
-        message: '',
-        type: 'success'
-    });
+  return (
+    <AuthLayout>
+      <Head title="Connexion" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+          <h1 className="text-2xl font-bold text-center text-gray-800">
+            Connexion
+          </h1>
 
-    useEffect(() => {
-        return () => {
-            reset('password');
-        };
-    }, []);
-
-    const submit = (e) => {
-        e.preventDefault();
-        post('/login', { // ✅ CORRIGÉ : URL directe au lieu de route()
-            onSuccess: () => {
-                // ✅ AFFICHAGE MODAL DE SUCCÈS
-                setModal({
-                    open: true,
-                    message: 'Connexion réussie ! Redirection en cours...',
-                    type: 'success'
-                });
-            },
-            onError: () => {
-                // ✅ AFFICHAGE MODAL D'ERREUR
-                setModal({
-                    open: true,
-                    message: 'Erreur de connexion. Vérifiez vos identifiants.',
-                    type: 'error'
-                });
-            }
-        });
-    };
-
-    return (
-        <AuthLayout>
-            <Head title="Connexion" />
-
-            {/* ✅ MODAL DE NOTIFICATION */}
-            <SuccessModal
-                open={modal.open}
-                close={() => setModal({ ...modal, open: false })}
-                message={modal.message}
-                type={modal.type}
-            />
-
-            <div className="w-full max-w-md">
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900">Connexion</h1>
-                    <p className="text-gray-600 mt-2">
-                        Connectez-vous à votre compte MAOlogie
-                    </p>
-                </div>
-
-                {status && (
-                    <div className="mb-4 font-medium text-sm text-green-600">
-                        {status}
-                    </div>
-                )}
-
-                <form onSubmit={submit} className="space-y-6">
-                    <div>
-                        <Label htmlFor="email" required>Email</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            name="email"
-                            value={data.email}
-                            autoComplete="username"
-                            placeholder="votre@email.com"
-                            error={!!errors.email}
-                            onChange={(e) => setData('email', e.target.value)}
-                        />
-                        <InputError message={errors.email} />
-                    </div>
-
-                    <div>
-                        <Label htmlFor="password" required>Mot de passe</Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            name="password"
-                            value={data.password}
-                            autoComplete="current-password"
-                            placeholder="••••••••"
-                            error={!!errors.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                        />
-                        <InputError message={errors.password} />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <Checkbox
-                                id="remember"
-                                name="remember"
-                                checked={data.remember}
-                                onChange={(e) => setData('remember', e.target.checked)}
-                            />
-                            <Label htmlFor="remember" className="ml-2 mb-0">
-                                Se souvenir de moi
-                            </Label>
-                        </div>
-
-                        {canResetPassword && (
-                            <TextLink href="/forgot-password"> {/* ✅ CORRIGÉ : URL directe */}
-                                Mot de passe oublié ?
-                            </TextLink>
-                        )}
-                    </div>
-
-                    <Button
-                        type="submit"
-                        disabled={processing}
-                        className="w-full"
-                    >
-                        {processing ? 'Connexion...' : 'Se connecter'}
-                    </Button>
-                </form>
-
-                <div className="mt-6 text-center">
-                    <p className="text-sm text-gray-600">
-                        Pas encore de compte ?{' '}
-                        <TextLink href="/register"> {/* ✅ CORRIGÉ : URL directe */}
-                            Créer un compte
-                        </TextLink>
-                    </p>
-                </div>
+          <form onSubmit={submit} className="space-y-5">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={data.email}
+                onChange={(e) => setData("email", e.target.value)}
+                error={!!errors.email}
+              />
+              <InputError message={errors.email} />
             </div>
-        </AuthLayout>
-    );
+
+            <div>
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input
+                id="password"
+                type="password"
+                value={data.password}
+                onChange={(e) => setData("password", e.target.value)}
+                error={!!errors.password}
+              />
+              <InputError message={errors.password} />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Checkbox
+                  id="remember"
+                  checked={data.remember}
+                  onChange={(e) => setData("remember", e.target.checked)}
+                />
+                <Label htmlFor="remember" className="ml-2 text-sm text-gray-600">
+                  Se souvenir de moi
+                </Label>
+              </div>
+
+              {canResetPassword && (
+                <TextLink href="/forgot-password" className="text-sm">
+                  Mot de passe oublié ?
+                </TextLink>
+              )}
+            </div>
+
+            <Button type="submit" className="w-full" disabled={processing}>
+              {processing ? "Connexion…" : "Se connecter"}
+            </Button>
+
+            <p className="text-center text-sm text-gray-500">
+              Pas de compte ? <TextLink href="/register">S’inscrire</TextLink>
+            </p>
+          </form>
+        </div>
+      </div>
+    </AuthLayout>
+  );
 }

@@ -33,7 +33,7 @@ Route::middleware('auth')->group(function(){
     Route::delete('/profile',[ProfileController::class,'destroy'])->name('profile.destroy');
     Route::get('/settings/password',[PasswordController::class,'edit'])->name('password.edit');
     Route::put('/password',[PasswordController::class,'update'])->name('password.update');
-    Route::post('/logout',[AuthenticatedSessionController::class,'destroy'])->name('logout');
+
 });
 
 
