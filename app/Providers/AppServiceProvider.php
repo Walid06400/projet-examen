@@ -9,20 +9,13 @@ use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        // Auto-discovery gère les packages automatiquement
+        // Auto-découverte gère tout
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        // Configuration Inertia pour partager les données utilisateur
         Inertia::share([
             'auth' => [
                 'user' => function () {

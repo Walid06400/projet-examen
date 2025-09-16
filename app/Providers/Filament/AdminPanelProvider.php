@@ -1,5 +1,5 @@
 <?php
-// app/Providers/Filament/AdminPanelProvider.php
+// app/Providers/Filament/AdminPanelProvider.php - VERSION FINALE
 
 namespace App\Providers\Filament;
 
@@ -49,11 +49,12 @@ class AdminPanelProvider extends PanelProvider
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
                 SubstituteBindings::class,
-                // 🎯 CRITIQUE : NE PAS inclure DisableBladeIconComponents
+                // 🎯 SUPPRIMER COMPLÈTEMENT : DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
             ]);
+            // 🎯 SUPPRIMER COMPLÈTEMENT le renderHook custom-icons
     }
 }

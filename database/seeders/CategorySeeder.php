@@ -1,36 +1,76 @@
 <?php
+// database/seeders/CategorySeeder.php - VERSION FINALE MAOlogie DWWM
 
 namespace Database\Seeders;
-// database/seeders/CategorySeeder.php
+
 use App\Models\Category;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
-
 
 class CategorySeeder extends Seeder
 {
-    public function run()
-{
-    $categories = [
-        [
-            'name' => 'Mixage', 
-            'type' => 'training',
-            'slug' => Str::slug('Mixage') // Génère "mixage"
-        ],
-        [
-            'name' => 'Mastering', 
-            'type' => 'training',
-            'slug' => Str::slug('Mastering') // Génère "mastering"
-        ],
-        [
-            'name' => 'Sound Design', 
-            'type' => 'blog',
-            'slug' => Str::slug('Sound Design') // Génère "sound-design"
-        ]
-    ];
+    public function run(): void
+    {
+        // 🎯 RESET COMPLET - Suppression de toutes les catégories existantes
+        Category::truncate();
 
-    foreach ($categories as $category) {
-        Category::create($category);
+        // 🎵 CATÉGORIES MAO SPÉCIALISÉES (suppression totale des formations)
+        $categories = [
+            [
+                'name' => 'Production Musicale',
+                'slug' => 'production-musicale',
+                'type' => 'article', // UNIQUEMENT article, plus de training
+                'description' => 'Techniques de composition, arrangement et création musicale assistée par ordinateur',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Mixage Audio',
+                'slug' => 'mixage-audio',
+                'type' => 'article',
+                'description' => 'Art du mixage : balance, spatialisation, effets et traitement sonore professionnel',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Mastering',
+                'slug' => 'mastering',
+                'type' => 'article',
+                'description' => 'Finalisation audio : égalisation, compression, limitation et standards de diffusion',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Matériel & Hardware',
+                'slug' => 'materiel-hardware',
+                'type' => 'article',
+                'description' => 'Reviews, guides d\'achat et tests de matériel audio professionnel et home studio',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Plugins & Software',
+                'slug' => 'plugins-software',
+                'type' => 'article',
+                'description' => 'Tests et tutoriels des logiciels, DAW, plugins VST et outils de production musicale',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Actualités MAO',
+                'slug' => 'actualites-mao',
+                'type' => 'article',
+                'description' => 'News, sorties et tendances de l\'industrie musicale et de la production audio',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+        ];
+
+        // Création des catégories
+        foreach ($categories as $category) {
+            Category::create($category);
+        }
+
+        $this->command->info('✅ ' . count($categories) . ' catégories MAO créées avec succès !');
+        $this->command->warn('🚫 Toutes les références aux formations ont été supprimées');
     }
-}
 }

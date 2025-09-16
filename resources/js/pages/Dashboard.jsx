@@ -1,13 +1,12 @@
 // resources/js/pages/Dashboard.jsx
 import { Head, Link, usePage, useForm, router } from '@inertiajs/react';
-import AppLayout from '@/layouts/app-layout';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { useState, useRef, useEffect } from 'react';
-import { 
-  Camera, Edit3, Loader2, CheckCircle, XCircle, 
-  MessageSquare, Heart, Calendar, BarChart3, User, 
-  TrendingUp, Clock, Star 
+import {
+  Camera, Edit3, Loader2, CheckCircle, XCircle,
+  MessageSquare, Heart, Calendar, BarChart3, User,
+  TrendingUp, Clock, Star
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -16,7 +15,7 @@ export default function Dashboard() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [message, setMessage] = useState(null);
   const fileInputRef = useRef(null);
-  
+
   const nameForm = useForm({ name: auth?.user?.name || '' });
 
   // ✅ Gérer les messages Flash de Laravel
@@ -32,7 +31,7 @@ export default function Dashboard() {
   // ✅ Auto-fermeture des messages après 5 secondes
   useEffect(() => {
     if (message) {
-      const timer = setTimeout(() => setMessage(null), 5000);
+      const timer = setTimeout(() => setMessage(null), 3000);
       return () => clearTimeout(timer);
     }
   }, [message]);
@@ -60,17 +59,17 @@ export default function Dashboard() {
     const maxSize = 5 * 1024 * 1024; // 5MB
 
     if (!validTypes.includes(file.type)) {
-      setMessage({ 
-        type: 'error', 
-        text: 'Format non supporté. Utilisez: JPG, PNG, GIF, WEBP.' 
+      setMessage({
+        type: 'error',
+        text: 'Format non supporté. Utilisez: JPG, PNG, GIF, WEBP.'
       });
       return;
     }
 
     if (file.size > maxSize) {
-      setMessage({ 
-        type: 'error', 
-        text: 'Fichier trop volumineux. Maximum 5MB.' 
+      setMessage({
+        type: 'error',
+        text: 'Fichier trop volumineux. Maximum 5MB.'
       });
       return;
     }
@@ -78,26 +77,26 @@ export default function Dashboard() {
     // ✅ Upload avec feedback visuel
     setIsUploadingAvatar(true);
     setMessage(null);
-    
+
     const formData = new FormData();
     formData.append('avatar', file);
-    
+
     router.post('/user/avatar/update', formData, {
       forceFormData: true,
       preserveScroll: true,
       onSuccess: () => {
         setIsUploadingAvatar(false);
-        setMessage({ 
-          type: 'success', 
-          text: 'Avatar mis à jour ! (300x300px, optimisé)' 
+        setMessage({
+          type: 'success',
+          text: 'Avatar mis à jour ! (300x300px, optimisé)'
         });
         fileInputRef.current.value = '';
       },
       onError: (errors) => {
         setIsUploadingAvatar(false);
-        setMessage({ 
-          type: 'error', 
-          text: errors.avatar || 'Erreur lors de l\'upload de l\'avatar.' 
+        setMessage({
+          type: 'error',
+          text: errors.avatar || 'Erreur lors de l\'upload de l\'avatar.'
         });
         fileInputRef.current.value = '';
       }
@@ -106,23 +105,23 @@ export default function Dashboard() {
 
   if (!auth || !auth.user) {
     return (
-      <AppLayout>
+      <>
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-600" />
             <p className="text-gray-600">Chargement de votre dashboard...</p>
           </div>
         </div>
-      </AppLayout>
+      </>
     );
   }
 
   return (
-    <AppLayout>
+    <>
       <Head title="Dashboard - MAOlogie" />
-      
+
       <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        
+
         {/* ✅ EN-TÊTE DASHBOARD */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
@@ -134,16 +133,16 @@ export default function Dashboard() {
         {/* ✅ MESSAGE DE FEEDBACK */}
         {message && (
           <div className={`mb-6 p-4 rounded-lg flex items-center space-x-3 shadow-sm border ${
-            message.type === 'success' 
-              ? 'bg-green-50 text-green-800 border-green-200' 
+            message.type === 'success'
+              ? 'bg-green-50 text-green-800 border-green-200'
               : 'bg-red-50 text-red-800 border-red-200'
           }`}>
-            {message.type === 'success' ? 
-              <CheckCircle className="w-5 h-5 flex-shrink-0" /> : 
+            {message.type === 'success' ?
+              <CheckCircle className="w-5 h-5 flex-shrink-0" /> :
               <XCircle className="w-5 h-5 flex-shrink-0" />
             }
             <span className="font-medium">{message.text}</span>
-            <button 
+            <button
               onClick={() => setMessage(null)}
               className="ml-auto text-sm hover:opacity-70"
             >
@@ -155,7 +154,7 @@ export default function Dashboard() {
         {/* ✅ CARTE PROFIL UTILISATEUR */}
         <div className="bg-white shadow-xl rounded-2xl p-8 mb-8 border border-gray-100">
           <div className="flex flex-col lg:flex-row items-center space-y-6 lg:space-y-0 lg:space-x-8">
-            
+
             {/* Avatar avec upload */}
             <div className="relative group">
               <img
@@ -163,12 +162,12 @@ export default function Dashboard() {
                 alt={`Avatar de ${auth.user.name}`}
                 className="w-36 h-36 rounded-full object-cover border-4 border-purple-600 shadow-lg transition-all duration-300 group-hover:shadow-xl"
               />
-              
+
               <label
                 htmlFor="avatar-upload"
                 className={`absolute bottom-0 right-0 p-3 rounded-full cursor-pointer transition-all duration-200 shadow-lg ${
-                  isUploadingAvatar 
-                    ? 'bg-gray-400 cursor-not-allowed' 
+                  isUploadingAvatar
+                    ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-purple-600 hover:bg-purple-700 hover:scale-110'
                 } text-white`}
                 title={isUploadingAvatar ? 'Upload en cours...' : 'Changer l\'avatar'}
@@ -178,7 +177,7 @@ export default function Dashboard() {
                 ) : (
                   <Camera className="w-5 h-5" />
                 )}
-                
+
                 <input
                   id="avatar-upload"
                   type="file"
@@ -212,8 +211,8 @@ export default function Dashboard() {
                         required
                       />
                       <div className="flex space-x-2">
-                        <Button 
-                          type="submit" 
+                        <Button
+                          type="submit"
                           disabled={nameForm.processing}
                           size="sm"
                         >
@@ -229,8 +228,8 @@ export default function Dashboard() {
                             </>
                           )}
                         </Button>
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           onClick={() => {
                             setIsEditingName(false);
                             nameForm.reset();
@@ -250,8 +249,8 @@ export default function Dashboard() {
                         <p className="text-gray-600 text-lg mb-2">{auth.user.email}</p>
                         <div className="flex items-center justify-center lg:justify-start space-x-2">
                           <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            auth.user.is_admin 
-                              ? 'bg-purple-100 text-purple-800' 
+                            auth.user.is_admin
+                              ? 'bg-purple-100 text-purple-800'
                               : 'bg-blue-100 text-blue-800'
                           }`}>
                             {auth.user.is_admin ? (
@@ -268,12 +267,12 @@ export default function Dashboard() {
                           </span>
                         </div>
                       </div>
-                      
-                      <Button 
+
+                      <Button
                         onClick={() => setIsEditingName(true)}
                         variant="outline"
                       >
-                        <Edit3 className="w-4 h-4 mr-2" /> 
+                        <Edit3 className="w-4 h-4 mr-2" />
                         Modifier le nom
                       </Button>
                     </>
@@ -297,7 +296,7 @@ export default function Dashboard() {
               <MessageSquare className="w-10 h-10 text-purple-200" />
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
@@ -309,7 +308,7 @@ export default function Dashboard() {
               <BarChart3 className="w-10 h-10 text-blue-200" />
             </div>
           </div>
-          
+
           <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between">
               <div>
@@ -331,8 +330,8 @@ export default function Dashboard() {
               Activité récente
             </h3>
             {recentActivity.length > 0 && (
-              <Link 
-                href="/blog" 
+              <Link
+                href="/blog"
                 className="text-purple-600 hover:text-purple-700 font-medium text-sm flex items-center"
               >
                 Voir le blog
@@ -340,19 +339,19 @@ export default function Dashboard() {
               </Link>
             )}
           </div>
-          
+
           {recentActivity.length > 0 ? (
             <div className="space-y-4">
               {recentActivity.map((activity, idx) => (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   className="border-l-4 border-purple-500 pl-6 py-4 bg-gradient-to-r from-purple-50 to-transparent rounded-r-lg hover:from-purple-100 transition-colors duration-200"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <p className="font-semibold text-gray-900 mb-1">
                         Commentaire sur{' '}
-                        <Link 
+                        <Link
                           href={`/blog/${activity.article_slug}`}
                           className="text-purple-600 hover:text-purple-700 hover:underline"
                         >
@@ -379,7 +378,7 @@ export default function Dashboard() {
               <p className="text-gray-600 mb-6">
                 Commencez à interagir avec la communauté MAOlogie !
               </p>
-              <Link 
+              <Link
                 href="/blog"
                 className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-colors duration-200 shadow-lg hover:shadow-xl"
               >
@@ -390,6 +389,6 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-    </AppLayout>
+    </>
   );
 }

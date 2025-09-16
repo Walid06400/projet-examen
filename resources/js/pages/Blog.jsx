@@ -1,133 +1,76 @@
-// resources/js/pages/Blog.jsx
-import { useState } from "react";
-import { Head, usePage } from "@inertiajs/react";
-import AppLayout from "@/layouts/app-layout";
-import ArticleCard from "@/components/blog/ArticleCard";
+import React from 'react';
+import { Head, Link } from '@inertiajs/react';
+import ArticleCard from '@/components/blog/ArticleCard';
 
-export default function Blog() {
-    // ✅ CORRIGÉ : Récupération sécurisée des données
-    const { articles: articlesData, categories } = usePage().props;
-    
-    // ✅ CORRIGÉ : Extraire le tableau depuis l'objet paginé
-    const articlesArray = articlesData?.data || [];
-    const paginationLinks = articlesData?.links || [];
-    
-    // ✅ DEBUG : Vérifier la structure des données
-    console.log('Articles data:', articlesData);
-    console.log('Articles array:', articlesArray);
-    console.log('Categories:', categories);
-
-    // État pour le filtre de catégorie
-    const [selectedCategory, setSelectedCategory] = useState("all");
-
-    // ✅ CORRIGÉ : Filtrage sur le tableau, pas l'objet paginé
-    const filteredArticles = selectedCategory === "all"
-        ? articlesArray
-        : articlesArray.filter((article) => 
-            article.category && article.category.slug === selectedCategory
-          );
-
+export default function Blog({ articles = [], categories = [], currentCategory = null }) {
     return (
-        <AppLayout>
-            <Head title="Blog MAOlogie - Articles de production musicale" />
+        <>
+            <Head title={currentCategory ? `${currentCategory.name} - MAOlogie` : "Blog - MAOlogie"} />
 
-            <div className="container mx-auto py-12 px-4">
-                {/* En-tête */}
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-                        Blog MAOlogie
-                    </h1>
-                    <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                        Découvrez nos derniers articles sur la production musicale, 
-                        les techniques de mixage, le mastering et bien plus encore.
-                    </p>
-                </div>
+            <div className="min-h-screen bg-gray-50 py-8">
+                <div className="container mx-auto px-4">
+                    {/* Header */}
+                    <div className="text-center mb-12">
+                        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                            {currentCategory ? currentCategory.name : 'Blog MAOlogie'}
+                        </h1>
+                        <p className="text-gray-600 max-w-2xl mx-auto">
+                            {currentCategory
+                                ? `Articles sur ${currentCategory.name}`
+                                : 'Découvrez nos tutoriels et guides sur la MAO'
+                            }
+                        </p>
+                    </div>
 
-                {/* Filtres de catégories */}
-                {categories && categories.length > 0 && (
-                    <div className="flex flex-wrap justify-center gap-4 mb-12">
-                        <button
-                            onClick={() => setSelectedCategory("all")}
+                    {/* Filtres par catégorie */}
+                    <div className="flex flex-wrap justify-center gap-4 mb-8">
+                        <Link
+                            href="/blog"
                             className={`px-6 py-2 rounded-full transition-colors ${
-                                selectedCategory === "all"
-                                    ? "bg-purple-600 text-white"
-                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                !currentCategory
+                                    ? 'bg-purple-600 text-white'
+                                    : 'bg-white text-gray-700 hover:bg-purple-100'
                             }`}
                         >
                             Tous les articles
-                        </button>
-                        {categories.map((category) => (
-                            <button
+                        </Link>
+                        {categories.map(category => (
+                            <Link
                                 key={category.id}
-                                onClick={() => setSelectedCategory(category.slug)}
+                                href={`/blog/category/${category.slug}`}
                                 className={`px-6 py-2 rounded-full transition-colors ${
-                                    selectedCategory === category.slug
-                                        ? "bg-purple-600 text-white"
-                                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                    currentCategory?.id === category.id
+                                        ? 'bg-purple-600 text-white'
+                                        : 'bg-white text-gray-700 hover:bg-purple-100'
                                 }`}
                             >
                                 {category.name}
-                            </button>
+                            </Link>
                         ))}
                     </div>
-                )}
 
-                {/* Liste des articles */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                    {filteredArticles.length > 0 ? (
-                        filteredArticles.map((article) => (
-                            <ArticleCard key={article.id} article={article} />
-                        ))
+                    {/* Articles */}
+                    {articles.length > 0 ? (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {articles.map(article => (
+                                <ArticleCard key={article.id} article={article} />
+                            ))}
+                        </div>
                     ) : (
-                        <div className="col-span-full text-center py-12">
-                            <div className="text-gray-500 text-lg">
-                                {selectedCategory === "all" 
-                                    ? "Aucun article disponible pour le moment."
-                                    : `Aucun article dans la catégorie sélectionnée.`
-                                }
-                            </div>
-                            {selectedCategory !== "all" && (
-                                <button
-                                    onClick={() => setSelectedCategory("all")}
-                                    className="mt-4 text-purple-600 hover:text-purple-800 underline"
-                                >
-                                    Voir tous les articles
-                                </button>
-                            )}
+                        <div className="text-center py-12">
+                            <p className="text-gray-600 text-lg">
+                                Aucun article trouvé dans cette catégorie.
+                            </p>
+                            <Link
+                                href="/blog"
+                                className="text-purple-600 hover:underline mt-4 inline-block"
+                            >
+                                Voir tous les articles
+                            </Link>
                         </div>
                     )}
                 </div>
-
-                {/* Pagination (si pas de filtre actif) */}
-                {selectedCategory === "all" && paginationLinks.length > 3 && (
-                    <div className="flex justify-center items-center space-x-2">
-                        {paginationLinks.map((link, index) => {
-                            if (!link.url) {
-                                return (
-                                    <span
-                                        key={index}
-                                        className="px-3 py-2 text-gray-400"
-                                        dangerouslySetInnerHTML={{ __html: link.label }}
-                                    />
-                                );
-                            }
-
-                            return (
-                                <a
-                                    key={index}
-                                    href={link.url}
-                                    className={`px-3 py-2 rounded-md transition-colors ${
-                                        link.active
-                                            ? "bg-purple-600 text-white"
-                                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                                    }`}
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                />
-                            );
-                        })}
-                    </div>
-                )}
             </div>
-        </AppLayout>
+        </>
     );
 }

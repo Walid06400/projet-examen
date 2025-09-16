@@ -1,20 +1,33 @@
-// resources/js/components/SuccessModal.jsx
-import React from 'react';
+import { useEffect } from "react";
+import ReactDOM from "react-dom";
 
-export default function SuccessModal({ open, close, message, type = 'success' }) {
+export default function SuccessModal({ open, message, redirectTo = "/" }) {
+  useEffect(() => {
+    if (open) {
+      const timer = setTimeout(() => {
+        window.location.href = redirectTo;
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [open, redirectTo]);
+
   if (!open) return null;
-  const colors = {
-    success: 'border-green-500 bg-green-50 text-green-700',
-    error: 'border-red-500 bg-red-50 text-red-700',
-  };
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-10">
-      <div className={`max-w-sm w-full border-l-4 px-6 py-5 rounded shadow-lg ${colors[type]}`}>
-        <div className="flex items-center justify-between">
-          <span className="font-medium">{message}</span>
-          <button onClick={close} className="ml-4 text-xl font-bold focus:outline-none">&times;</button>
-        </div>
+
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
+        <svg
+          className="mx-auto mb-4 h-12 w-12 text-green-500"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+        <p className="text-lg font-semibold text-gray-800">{message}</p>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
