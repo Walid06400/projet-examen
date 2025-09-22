@@ -1,5 +1,5 @@
 <?php
-// app/Models/User.php - Version optimisée
+// app/Models/User.php - Version optimisée MAOlogie
 
 namespace App\Models;
 
@@ -23,7 +23,8 @@ class User extends Authenticatable implements FilamentUser
         'is_admin',
         'avatar',
         'bio',
-        'location'
+        'location',
+        'website',
     ];
 
     protected $hidden = [
@@ -37,13 +38,13 @@ class User extends Authenticatable implements FilamentUser
         'is_admin' => 'boolean',
     ];
 
-    // 🎯 IMPORTANT : Ajouter avatar_url aux attributs automatiquement disponibles
+    // 🎯 Rendre avatar_url disponible automatiquement
     protected $appends = [
         'avatar_url',
     ];
 
     /**
-     * ✅ RELATION - Articles écrits par l'utilisateur
+     * 📄 Relation : articles rédigés
      */
     public function articles(): HasMany
     {
@@ -51,7 +52,7 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * ✅ RELATION - Commentaires postés par l'utilisateur
+     * 💬 Relation : commentaires postés
      */
     public function comments(): HasMany
     {
@@ -59,37 +60,36 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * ✅ ACCESSEUR pour URL complet de l'avatar
-     * EXPLICATION : Un accesseur Laravel transforme automatiquement les données
-     * Ici, on convertit le chemin de fichier en URL complète accessible par le navigateur
+     * 🖼️ Accessor : URL complète de l'avatar ou fallback
      */
-    public function getAvatarUrlAttribute(): string
-    {
-        // Si l'utilisateur a un avatar uploadé ET que le fichier existe
-        if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
-            return asset('storage/' . $this->avatar);
-        }
-
-        // Sinon, retourner l'avatar par défaut avec initiales
-        return $this->getDefaultAvatarAttribute();
+   public function getAvatarUrlAttribute(): string
+{
+    // Si un avatar est défini et que le fichier existe
+    if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
+        // Remplace Storage::disk('public')->url($this->avatar);
+        return asset('storage/' . $this->avatar);
     }
 
+    // Fallback initiales
+    return $this->getDefaultAvatarAttribute();
+}
+
+
     /**
-     * ✅ ACCESSEUR pour avatar par défaut avec initiales
-     * EXPLICATION : Utilise un service externe (ui-avatars.com) pour générer
-     * un avatar avec les initiales si pas d'image uploadée
+     * 🎨 Accessor : avatar par défaut (initiales via ui-avatars.com)
      */
     public function getDefaultAvatarAttribute(): string
     {
-        return "https://ui-avatars.com/api/?name=" . urlencode($this->name) .
-            "&color=7c3aed&background=ede9fe&size=300";
+        $name = urlencode($this->name ?? 'U');
+        return "https://ui-avatars.com/api/?name={$name}"
+             . "&color=7c3aed&background=ede9fe&size=300";
     }
 
     /**
-     * Accès admin Filament
+     * 🔐 Autorisation Filament
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->is_admin ?? false;
+        return (bool) $this->is_admin;
     }
 }
