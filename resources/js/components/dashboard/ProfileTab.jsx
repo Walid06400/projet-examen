@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 
 export default function ProfileTab() {
-  // ✅ SOLUTION : Lecture des données depuis les props Inertia
   const { auth } = usePage().props;
   const user = auth.user;
 
@@ -22,7 +21,6 @@ export default function ProfileTab() {
   const [isEditing, setIsEditing] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  // Formulaire avec données utilisateur actuelles
   const { data, setData, post, processing, errors, reset, isDirty } = useForm({
     name: user.name || '',
     bio: user.bio || '',
@@ -43,7 +41,8 @@ export default function ProfileTab() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    post('/profile', {
+    // ✅ CORRECTION : Route cohérente
+    post('/settings/profile', {
       forceFormData: true,
       preserveScroll: true,
       onSuccess: () => {
@@ -51,8 +50,6 @@ export default function ProfileTab() {
         setAvatarPreview(null);
         reset('avatar');
         setShowModal(true);
-
-        // ✅ SOLUTION : Pas besoin de reload manuel, la redirection refresh automatiquement
         setTimeout(() => setShowModal(false), 3000);
       },
     });

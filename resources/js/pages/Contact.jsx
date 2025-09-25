@@ -1,6 +1,6 @@
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
-import NavBar from "@/components/layout/NavBar";
+import NavBar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 export default function Contact() {

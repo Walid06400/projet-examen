@@ -5,15 +5,17 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
-use App\Models\User;
 use Inertia\Inertia;
 
 class ProfileController extends Controller
 {
+    /**
+     * Afficher la page d'édition du profil
+     */
     public function edit(Request $request)
     {
         $user = $request->user();
@@ -34,7 +36,9 @@ class ProfileController extends Controller
         ]);
     }
 
-    // ✅ MÉTHODE UNIFIÉE – Gère profil + avatar, avec redirection Inertia
+    /**
+     * ✅ CORRECTION : Méthode update cohérente
+     */
     public function update(Request $request): RedirectResponse
     {
         try {
@@ -46,7 +50,6 @@ class ProfileController extends Controller
                 'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             ]);
 
-
             $user = $request->user();
 
             // Mise à jour des champs texte
@@ -57,7 +60,7 @@ class ProfileController extends Controller
                 'website' => $validated['website'] ?? null,
             ]);
 
-            // Gestion de l'avatar si fourni
+            // Gestion de l'avatar
             if ($request->hasFile('avatar')) {
                 if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                     Storage::disk('public')->delete($user->avatar);
@@ -68,8 +71,8 @@ class ProfileController extends Controller
 
             $user->save();
 
-            // Redirection Inertia pour rafraîchir auth.user
-            return Inertia::redirectRoute('dashboard')
+            // ✅ CORRECTION : Redirection vers le dashboard pour rafraîchir
+            return redirect()->route('dashboard')
                 ->with('success', 'Profil mis à jour avec succès !');
 
         } catch (ValidationException $e) {
@@ -80,36 +83,6 @@ class ProfileController extends Controller
             Log::error('Profile update error: ' . $e->getMessage());
             return back()
                 ->with('error', 'Erreur lors de la mise à jour du profil.');
-        }
-    }
-
-    // Méthode séparée pour l’avatar si besoin
-    public function updateAvatar(Request $request): RedirectResponse
-    {
-        try {
-            $request->validate([
-                'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            ]);
-
-            /** @var User $user */
-            $user = Auth::user();
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-            $path = $request->file('avatar')->store('avatars', 'public');
-            $user->avatar = $path;
-            $user->save();
-
-            return Inertia::redirectRoute('settings.profile.edit')
-                ->with('success', 'Avatar mis à jour !');
-        } catch (ValidationException $e) {
-            return back()
-                ->withErrors($e->errors())
-                ->with('error', 'Fichier invalide.');
-        } catch (\Exception $e) {
-            Log::error('Avatar upload error: ' . $e->getMessage());
-            return back()
-                ->with('error', 'Erreur upload avatar.');
         }
     }
 
@@ -127,7 +100,6 @@ class ProfileController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/')
-            ->with('success', 'Compte supprimé.');
+        return redirect('/')->with('success', 'Compte supprimé.');
     }
 }

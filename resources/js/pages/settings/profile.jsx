@@ -1,8 +1,7 @@
 import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
-import DeleteUser from '@/components/delete-user';
-import HeadingSmall from '@/components/heading-small';
+import  DangerZone from '@/components/DangerZone';
 import InputError from '@/components/input-error';
 import  Button  from '@/components/ui/Button';
 import  Input  from '@/components/ui/Input';

@@ -1,5 +1,5 @@
 <?php
-// app/Models/Article.php
+
 
 namespace App\Models;
 
@@ -15,55 +15,37 @@ class Article extends Model
     use HasFactory;
 
     protected $fillable = [
-        'category_id',
-        'user_id',
         'title',
         'slug',
-        'content',
         'excerpt',
-        'image',
+        'content',
+        'featured_image',
+        'user_id',
+        'category_id',
         'status',
         'published_at',
-        'is_featured'
+        'is_featured',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
         'is_featured' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
     ];
 
     protected $appends = [
         'image_url',
-        'comments_count',
     ];
 
-    /**
-     * ✅ RELATIONS
-     */
-    public function category(): BelongsTo
+    public function getImageUrlAttribute(): ?string
     {
-        return $this->belongsTo(Category::class);
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function comments(): HasMany
-    {
-        return $this->hasMany(\App\Models\Comment::class)->orderBy('created_at', 'desc');
-    }
-
-    /**
-     * ✅ SCOPES
-     */
-    public function scopePublished($query)
-    {
-        return $query->where('status', 'published')
-                    ->whereNotNull('published_at');
+        if ($this->featured_image) {
+            if (filter_var($this->featured_image, FILTER_VALIDATE_URL)) {
+                return $this->featured_image;
+            }
+            return Storage::disk('public')->url($this->featured_image);
+        }
+        return "https://ui-avatars.com/api/?name=" . urlencode($this->title) .
+               "&background=ede9fe&color=7c3aed&size=400";
     }
 
     public function scopeFeatured($query)
@@ -71,38 +53,76 @@ class Article extends Model
         return $query->where('is_featured', true);
     }
 
-    /**
-     * ✅ ACCESSEURS
-     */
-    public function getImageUrlAttribute(): string
+    public function scopePublished($query)
     {
-        if ($this->image) {
-            return Storage::url($this->image);
-        }
-        return '/images/default-article.jpg';
+        return $query->where('status', 'published')
+                     ->whereNotNull('published_at')
+                     ->where('published_at', '<=', now());
     }
 
-    public function getCommentsCountAttribute(): int
+    public function scopeDraft($query)
     {
-        return $this->comments()->count();
+        return $query->where('status', 'draft');
     }
 
-    public function getExcerptAttribute($value)
+    public function scopeRecent($query)
     {
-        if ($value) {
-            return $value;
-        }
-        return substr(strip_tags($this->content ?? ''), 0, 200) . '...';
+        return $query->orderBy('published_at', 'desc');
     }
 
-    /**
-     * ✅ MUTATEURS
-     */
-    public function setTitleAttribute($value)
+    public function user(): BelongsTo
     {
-        $this->attributes['title'] = $value;
-        if (empty($this->attributes['slug'])) {
-            $this->attributes['slug'] = Str::slug($value);
-        }
+        return $this->belongsTo(User::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === 'published' &&
+               $this->published_at !== null &&
+               $this->published_at->lte(now());
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    public function getReadTimeAttribute(): string
+    {
+        $wordCount = str_word_count(strip_tags($this->content));
+        $minutes = ceil($wordCount / 200);
+        return $minutes . ' min de lecture';
+    }
+
+    public function getExcerptLimitedAttribute(): string
+    {
+        return Str::limit($this->excerpt, 150);
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($article) {
+            if (empty($article->slug)) {
+                $article->slug = Str::slug($article->title);
+            }
+        });
+
+        static::updating(function ($article) {
+            if ($article->isDirty('title') && empty($article->slug)) {
+                $article->slug = Str::slug($article->title);
+            }
+        });
     }
 }
