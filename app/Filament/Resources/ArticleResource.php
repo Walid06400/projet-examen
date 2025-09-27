@@ -16,6 +16,8 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Tables\Columns\ImageColumn;
 use App\Filament\Resources\ArticleResource\Pages;
 
+
+
 class ArticleResource extends Resource
 {
     protected static ?string $model = Article::class;
@@ -58,7 +60,7 @@ class ArticleResource extends Resource
 
             Forms\Components\Section::make('Médias et Classification')->schema([
                 // ✅ UPLOAD CORRIGÉ - Sans validation maxSize problématique
-                FileUpload::make('featured_image')
+                FileUpload::make('image')
                     ->label('Image mise en avant')
                     ->image()
                     ->directory('articles')
@@ -117,7 +119,7 @@ class ArticleResource extends Resource
             ->columns([
                 // ✅ IMAGE COLUMN CORRIGÉE
                 ImageColumn::make('featured_image')
-                    ->label('Image')
+                    ->label('image')
                     ->disk('public')  // ✅ Disk explicite
                     ->circular()
                     ->defaultImageUrl(fn($record) => 'https://ui-avatars.com/api/?name=' . urlencode($record->title ?? 'Article') . '&background=ede9fe&color=7c3aed&size=400')

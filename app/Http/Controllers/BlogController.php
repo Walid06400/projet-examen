@@ -1,187 +1,205 @@
 <?php
-// app/Http/Controllers/BlogController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\Comment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Auth;
 
 class BlogController extends Controller
 {
     /**
-     * ✅ CORRECTION : Méthode index complète avec catégories
+     * Afficher la liste des articles du blog
      */
     public function index(Request $request): Response
     {
-        $categorySlug = $request->get('category');
+        $categorySlug = $request->get('category', 'all');
 
-        // VRAIES DONNÉES depuis la BDD
+        // Construire la requête avec relations optimisées
         $query = Article::with(['category', 'user'])
-            ->published()
+            ->where('status', 'published')
+            ->whereNotNull('published_at')
             ->latest('published_at');
 
-        // Filtrage par catégorie
+        // Filtrage par catégorie si spécifiée
         if ($categorySlug && $categorySlug !== 'all') {
             $query->whereHas('category', function ($q) use ($categorySlug) {
                 $q->where('slug', $categorySlug);
             });
         }
 
+        // Paginer et transformer les données
         $articles = $query->paginate(12)->through(function ($article) {
             return [
                 'id' => $article->id,
                 'title' => $article->title,
                 'slug' => $article->slug,
                 'excerpt' => $article->excerpt,
-                'image' => $article->image_url, // Accesseur pour l'URL complète
+                'image' => $article->image_url,
                 'category' => [
-                    'id' => $article->category?->id,
+                    'id'   => $article->category?->id,
                     'name' => $article->category?->name ?? 'Non catégorisé',
                     'slug' => $article->category?->slug ?? 'general',
-                    'color' => $this->getCategoryColor($article->category?->slug),
                 ],
                 'author' => [
                     'name' => $article->user?->name ?? 'Auteur anonyme',
                 ],
                 'published_at' => $article->published_at?->format('d M Y'),
-                'read_time' => $this->calculateReadTime($article->content),
+                'read_time'    => $this->calculateReadTime($article->content),
             ];
         });
 
-        // ✅ CORRECTION : Récupérer toutes les catégories pour le filtre
+        // Récupérer toutes les catégories avec comptage
         $categories = Category::where('type', 'article')
             ->withCount(['articles' => function ($query) {
-                $query->published();
+                $query->where('status', 'published');
             }])
             ->orderBy('name')
             ->get()
             ->map(function ($category) {
                 return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'slug' => $category->slug,
+                    'id'             => $category->id,
+                    'name'           => $category->name,
+                    'slug'           => $category->slug,
                     'articles_count' => $category->articles_count,
                 ];
             });
 
-        // ✅ CORRECTION : Catégorie courante si filtrage
-        $currentCategory = null;
-        if ($categorySlug && $categorySlug !== 'all') {
-            $currentCategory = Category::where('slug', $categorySlug)->first();
-            if ($currentCategory) {
-                $currentCategory = [
-                    'id' => $currentCategory->id,
-                    'name' => $currentCategory->name,
-                    'slug' => $currentCategory->slug,
-                ];
-            }
-        }
+        // Log pour debug
+        Log::info('Blog Controller Debug', [
+            'total_articles'    => Article::where('status', 'published')->count(),
+            'articles_in_page'  => $articles->count(),
+            'selected_category' => $categorySlug,
+            'categories_count'  => $categories->count(),
+        ]);
 
         return Inertia::render('Blog', [
-            'articles' => $articles,
-            'categories' => $categories, // ✅ AJOUTÉ : Passer les catégories
-            'currentCategory' => $currentCategory,
+            'articles'         => $articles,
+            'categories'       => $categories,
+            'selectedCategory' => $categorySlug,
         ]);
     }
 
     /**
-     * ✅ MÉTHODE CATEGORY SÉPARÉE
+     * Afficher un article individuel
      */
-    public function category(string $slug): Response
-    {
-        // Utiliser la même logique que index() avec filtrage
-        $request = request();
-        $request->merge(['category' => $slug]);
-
-        return $this->index($request);
-    }
-
-   public function show(string $slug): Response
+    public function show(string $slug): Response
     {
         $article = Article::with(['category', 'user', 'comments.user'])
             ->where('slug', $slug)
-            ->published()
+            ->where('status', 'published')
             ->firstOrFail();
 
+        // Charger les commentaires principaux et leurs réactions et réponses
+        $comments = Comment::with(['user', 'reactions'])
+            ->where('article_id', $article->id)
+            ->whereNull('parent_id') // Commentaires principaux uniquement
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($comment) {
+                return [
+                    'id'              => $comment->id,
+                    'content'         => $comment->content,
+                    'created_at'      => $comment->created_at->format('d/m/Y H:i'),
+                    'user'            => [
+                        'id'     => $comment->user->id,
+                        'name'   => $comment->user->name,
+                        'avatar' => $comment->user->avatar,
+                    ],
+                    'likes_count'     => $comment->likesCount(),
+                    'dislikes_count'  => $comment->dislikesCount(),
+                    'user_reaction'   => Auth::check() ? $comment->getUserReaction(Auth::id())?->type : null,
+                    'can_delete'      => auth::check() && (auth::id() === $comment->user_id || auth::user()->is_admin),
+                    'replies'         => $comment->replies()->with(['user', 'reactions'])->get()->map(function ($reply) {
+                        return [
+                            'id'             => $reply->id,
+                            'content'        => $reply->content,
+                            'created_at'     => $reply->created_at->format('d/m/Y H:i'),
+                            'user'           => [
+                                'id'     => $reply->user->id,
+                                'name'   => $reply->user->name,
+                                'avatar' => $reply->user->avatar,
+                            ],
+                            'likes_count'    => $reply->likesCount(),
+                            'dislikes_count' => $reply->dislikesCount(),
+                            'user_reaction'  => auth::check() ? $reply->getUserReaction(auth::id())?->type : null,
+                            'can_delete'     => auth::check() && (auth::id() === $reply->user_id || auth::user()->is_admin),
+                        ];
+                    }),
+                ];
+            });
+
+        // Articles similaires (même catégorie)
         $relatedArticles = Article::with('category')
             ->where('category_id', $article->category_id)
             ->where('id', '!=', $article->id)
-            ->published()
+            ->where('status', 'published')
             ->latest('published_at')
             ->take(3)
             ->get()
-            ->map(fn($a) => [
-                'id'           => $a->id,
-                'title'        => $a->title,
-                'slug'         => $a->slug,
-                'excerpt'      => $a->excerpt,
-                'image'        => $a->image_url,
-                'category'     => [
-                    'name' => $a->category?->name ?? 'Non catégorisé',
-                    'slug' => $a->category?->slug ?? 'general',
-                ],
-                'published_at' => $a->published_at?->format('d M Y'),
-            ])
-            ->toArray();
+            ->map(function ($relatedArticle) {
+                return [
+                    'id'           => $relatedArticle->id,
+                    'title'        => $relatedArticle->title,
+                    'slug'         => $relatedArticle->slug,
+                    'excerpt'      => $relatedArticle->excerpt,
+                    'image'        => $relatedArticle->image_url,
+                    'category'     => [
+                        'name' => $relatedArticle->category?->name ?? 'Non catégorisé',
+                        'slug' => $relatedArticle->category?->slug ?? 'general',
+                    ],
+                    'published_at' => $relatedArticle->published_at?->format('d M Y'),
+                ];
+            });
 
         return Inertia::render('BlogArticle', [
             'article'         => [
-                'id'            => $article->id,
-                'title'         => $article->title,
-                'slug'          => $article->slug,
-                'content'       => $article->content,
-                'excerpt'       => $article->excerpt,
-                'image'         => $article->image_url,
-                'category'      => [
+                'id'             => $article->id,
+                'title'          => $article->title,
+                'slug'           => $article->slug,
+                'content'        => $article->content,
+                'excerpt'        => $article->excerpt,
+                'image'          => $article->image_url,
+                'category'       => [
                     'id'   => $article->category?->id,
                     'name' => $article->category?->name ?? 'Non catégorisé',
                     'slug' => $article->category?->slug ?? 'general',
                 ],
-                'author'        => ['name' => $article->user?->name ?? 'Auteur anonyme'],
-                'published_at'  => $article->published_at?->format('d M Y'),
-                'read_time'     => $this->calculateReadTime($article->content),
-                'comments_count'=> $article->comments->count(),
-            ],
-            'comments'        => $article->comments->map(fn($c) => [
-                'id'         => $c->id,
-                'content'    => $c->content,
-                'author'     => [
-                    'name'   => $c->user?->name ?? 'Utilisateur',
-                    'avatar' => $c->user?->avatar_url,
+                'author'         => [
+                    'name' => $article->user?->name ?? 'Auteur anonyme',
                 ],
-                'created_at' => $c->created_at?->format('d M Y H:i'),
-            ])->toArray(),
-            'relatedArticles' => $relatedArticles,           // array validé
-            'canComment'      => Auth::check(),              // <— utiliser le Facade
+                'published_at'   => $article->published_at?->format('d M Y'),
+                'read_time'      => $this->calculateReadTime($article->content),
+                'comments_count' => $article->comments->count(),
+            ],
+            'comments'        => $comments,
+            'relatedArticles' => $relatedArticles,
+            'canComment'      => Auth::check(),
         ]);
     }
 
+    /**
+     * Afficher les articles d'une catégorie spécifique
+     */
+    public function category(string $slug): Response
+    {
+        $request = request();
+        $request->merge(['category' => $slug]);
+        return $this->index($request);
+    }
+
+    /**
+     * Calculer le temps de lecture estimé
+     */
     private function calculateReadTime(string $content): string
     {
         $wordCount = str_word_count(strip_tags($content));
-        $minutes   = ceil($wordCount / 200);
+        $minutes   = ceil($wordCount / 200); // 200 mots par minute
         return $minutes . ' min de lecture';
     }
-
-
-
-
-    //private function getCategoryColor(?string $slug): string
-    //{
-      //  $colors = [
-        //    'production-musicale' => 'bg-purple-100 text-purple-800',
-          //  'mixage-audio' => 'bg-blue-100 text-blue-800',
-            //'mastering' => 'bg-green-100 text-green-800',
-        //    'materiel-hardware' => 'bg-yellow-100 text-yellow-800',
-          //  'plugins-software' => 'bg-indigo-100 text-indigo-800',
-       //     'actualites-mao' => 'bg-red-100 text-red-800',
-         //   'default' => 'bg-gray-100 text-gray-800',
-        //];
-
-        //return $colors[$slug] ?? $colors['default'];
-    //}
 }

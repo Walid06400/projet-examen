@@ -20,7 +20,7 @@ Route::middleware('auth')->group(function () {
     // Commentaires
     Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
-
+    Route::post('/comments/{comment}/react', [CommentController::class, 'react'])->name('comments.react');
     // Pages statiques
     Route::get('/contact', fn() => Inertia::render('Contact'))->name('contact');
     Route::get('/legal', fn() => Inertia::render('Legal'))->name('legal');

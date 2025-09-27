@@ -1,16 +1,15 @@
 // resources/js/pages/BlogCategory.jsx
 import { useState } from "react";
 import { Head, usePage, Link } from "@inertiajs/react";
-import AppLayout from "@/layouts/app-layout";
 import ArticleCard from "@/components/blog/ArticleCard";
 
 export default function BlogCategory() {
     const { category, articles, categories } = usePage().props;
 
     return (
-        <AppLayout>
+        <>
             <Head title={`${category.name} - Blog MAOlogie`} />
-            
+
             <div className="container mx-auto py-16 px-4">
                 <div className="text-center mb-12">
                     <h1 className="text-4xl font-bold text-gray-800">
@@ -40,7 +39,7 @@ export default function BlogCategory() {
                     >
                         Tous
                     </Link>
-                    
+
                     {categories.map((cat) => (
                         <Link
                             key={cat.id}
@@ -71,6 +70,6 @@ export default function BlogCategory() {
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }

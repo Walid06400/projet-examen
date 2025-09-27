@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,59 +14,43 @@ class Article extends Model
     use HasFactory;
 
     protected $fillable = [
+        'category_id',
+        'user_id',
         'title',
         'slug',
-        'excerpt',
         'content',
-        'featured_image',
-        'user_id',
-        'category_id',
+        'excerpt',
+        'image',
         'status',
         'published_at',
-        'is_featured',
+        'is_featured'
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
         'is_featured' => 'boolean',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
-    protected $appends = [
-        'image_url',
-    ];
-
-    public function getImageUrlAttribute(): ?string
+    // SCOPE pour les articles publiés
+    public function scopePublished($query)
     {
-        if ($this->featured_image) {
-            if (filter_var($this->featured_image, FILTER_VALIDATE_URL)) {
-                return $this->featured_image;
-            }
-            return Storage::disk('public')->url($this->featured_image);
-        }
-        return "https://ui-avatars.com/api/?name=" . urlencode($this->title) .
-               "&background=ede9fe&color=7c3aed&size=400";
+        return $query->where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
     }
 
+    // SCOPE pour les articles à la une
     public function scopeFeatured($query)
     {
         return $query->where('is_featured', true);
     }
 
-    public function scopePublished($query)
+    // RELATIONS SÉCURISÉES
+    public function category(): BelongsTo
     {
-        return $query->where('status', 'published')
-                     ->whereNotNull('published_at')
-                     ->where('published_at', '<=', now());
-    }
-
-    public function scopeDraft($query)
-    {
-        return $query->where('status', 'draft');
-    }
-
-    public function scopeRecent($query)
-    {
-        return $query->orderBy('published_at', 'desc');
+        return $this->belongsTo(Category::class);
     }
 
     public function user(): BelongsTo
@@ -75,54 +58,59 @@ class Article extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(Category::class);
-    }
-
     public function comments(): HasMany
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class)->orderBy('created_at', 'desc');
     }
 
-    public function isPublished(): bool
+    // ACCESSEUR SÉCURISÉ pour l'URL de l'image
+    public function getImageUrlAttribute(): string
     {
-        return $this->status === 'published' &&
-               $this->published_at !== null &&
-               $this->published_at->lte(now());
+        if ($this->image && Storage::disk('public')->exists($this->image)) {
+            return Storage::url($this->image);
+        }
+        return '/images/default-article.jpg';
     }
 
-    public function isDraft(): bool
+    // ACCESSEUR pour compter les commentaires
+    public function getCommentsCountAttribute(): int
     {
-        return $this->status === 'draft';
+        return $this->comments()->count();
     }
 
-    public function getReadTimeAttribute(): string
+    // ACCESSEUR pour l'extrait automatique
+    public function getExcerptAttribute($value): string
     {
-        $wordCount = str_word_count(strip_tags($this->content));
-        $minutes = ceil($wordCount / 200);
-        return $minutes . ' min de lecture';
+        if ($value) {
+            return $value;
+        }
+        return Str::limit(strip_tags($this->content ?? ''), 200);
     }
 
-    public function getExcerptLimitedAttribute(): string
+    // MUTATEUR pour générer le slug automatiquement
+    public function setTitleAttribute($value): void
     {
-        return Str::limit($this->excerpt, 150);
+        $this->attributes['title'] = $value;
+        if (empty($this->attributes['slug'])) {
+            $this->attributes['slug'] = Str::slug($value);
+        }
     }
 
-    protected static function boot()
+    // MUTATEUR pour le slug
+    public function setSlugAttribute($value): void
     {
-        parent::boot();
+        $this->attributes['slug'] = Str::slug($value);
+    }
 
-        static::creating(function ($article) {
-            if (empty($article->slug)) {
-                $article->slug = Str::slug($article->title);
-            }
-        });
+    // ACCESSEUR pour l'URL de l'article
+    public function getUrlAttribute(): string
+    {
+        return route('blog.show', $this->slug);
+    }
 
-        static::updating(function ($article) {
-            if ($article->isDirty('title') && empty($article->slug)) {
-                $article->slug = Str::slug($article->title);
-            }
-        });
+    // ACCESSEUR pour la description courte
+    public function getShortDescriptionAttribute(): string
+    {
+        return Str::limit(strip_tags($this->content ?? ''), 100);
     }
 }

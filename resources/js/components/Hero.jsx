@@ -22,8 +22,8 @@ export default function Hero() {
                     {/* Animation CSS pure au lieu de framer-motion */}
                     <div className="space-y-6 animate-fade-in">
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 to-orange-500">
                             Devenez un expert en
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500">
                                 {' '}production musicale
                             </span>
                         </h1>
@@ -33,23 +33,39 @@ export default function Hero() {
                             Tutoriels, guides pratiques et partage d'expériences.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                            {/* Bouton principal */}
-                            <Link
-                                href="/blog"
-                                className="inline-block bg-transparent border-2 border-white hover:bg-white hover:bg-opacity-10 px-8 py-3 rounded-md font-medium text-lg transition-colors duration-200 text-center"
-                            >
-                                Lire le blog
-                            </Link>
+                      <div className="flex flex-col sm:flex-row gap-4 pt-4">
+  {/* Bouton principal */}
+  <Link
+    href="/blog"
+    className="
+      inline-block px-8 py-3 rounded-md font-medium text-lg text-white text-center
+      border-2 border-white bg-transparent
+      transition-all duration-300
+      hover:text-white
+      hover:border-transparent
+      hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500
+      hover:shadow-lg hover:shadow-indigo-500/30
+    "
+  >
+    Lire le blog
+  </Link>
 
-                            {/* Bouton secondaire */}
-                            <Link
-                                href="/register"
-                                className="inline-block bg-white bg-opacity-10 border-2 border-transparent hover:bg-opacity-20 px-8 py-3 rounded-md font-medium text-lg transition-colors duration-200 text-center"
-                            >
-                                Rejoindre la communauté
-                            </Link>
-                        </div>
+  {/* Bouton secondaire */}
+  <Link
+    href="/register"
+    className="
+       inline-block px-8 py-3 rounded-md font-medium text-lg text-white text-center
+      border-2 border-white bg-transparent
+      transition-all duration-300
+      hover:text-white
+      hover:border-transparent
+      hover:bg-gradient-to-r hover:from-indigo-500 hover:to-purple-500
+      hover:shadow-lg hover:shadow-indigo-500/30
+    "
+  >
+    Rejoindre la communauté
+  </Link>
+</div>
                     </div>
                 </div>
             </div>
