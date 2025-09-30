@@ -64,10 +64,8 @@ class User extends Authenticatable implements FilamentUser
      */
    public function getAvatarUrlAttribute(): string
 {
-    // Si un avatar est défini et que le fichier existe
-    if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
-        // Remplace Storage::disk('public')->url($this->avatar);
-        return asset('storage/' . $this->avatar);
+    if ($this->avatar && Storage::exists($this->avatar)) {
+        return Storage::url($this->avatar);
     }
 
     // Fallback initiales
