@@ -1,79 +1,59 @@
-// resources/js/components/blog/ArticlesSection.jsx
-import React from "react";
-import { motion } from "framer-motion";
-import { Link } from "@inertiajs/react";
-import ArticleCard from "./ArticleCard";
+import React from 'react';
+import ArticleCard from './ArticleCard';
 
-const containerVariants = {
-    hidden: {},
-    visible: {
-        transition: {
-            staggerChildren: 0.14,
-        },
-    },
-};
-
-export default function ArticlesSection({ articles = [] }) {  // ✅ Valeur par défaut
-    // ✅ Vérification sécurisée
-    if (!articles || !Array.isArray(articles)) {
+export default function ArticlesSection({ articles }) {
+    // Gestion des cas d'absence d'articles
+    if (!articles || articles.length === 0) {
         return (
-            <section className="py-16 bg-gray-50">
-                <div className="container mx-auto px-4 text-center">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-4">Articles récents</h2>
-                    <p className="text-gray-600">Aucun article disponible pour le moment</p>
+            <div className="text-center py-16">
+                <div className="text-gray-400 mb-6">
+                    <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
                 </div>
-            </section>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Aucun article disponible
+                </h3>
+                <p className="text-gray-500 mb-6">
+                    Les articles seront bientôt disponibles. Revenez plus tard !
+                </p>
+                <a
+                    href="/blog"
+                    className="inline-flex items-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-md hover:bg-purple-700 transition-colors"
+                >
+                    Découvrir le blog
+                </a>
+            </div>
         );
     }
 
     return (
-        <section className="py-16 bg-gray-50">
-            <div className="container mx-auto px-4">
-                <div className="text-center mb-12">
-                    <motion.h2 
-                        className="text-3xl md:text-4xl font-bold text-gray-800 mb-4"
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
+        <>
+            {/* Grille d'articles responsive */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {articles.map((article, index) => (
+                    <div
+                        key={article.id}
+                        className={`${index === 0 && articles.length >= 3 ? 'md:col-span-2 lg:col-span-1' : ''}`}
+                        style={{
+                            animationDelay: `${index * 0.1}s`
+                        }}
                     >
-                        Articles récents
-                    </motion.h2>
-                    <motion.p 
-                        className="text-gray-600 max-w-2xl mx-auto"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                    >
-                        Restez à jour avec nos derniers articles, tutoriels et conseils sur la production musicale.
-                    </motion.p>
-                </div>
-
-                {articles.length > 0 ? (
-                    <motion.div 
-                        className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-                        variants={containerVariants}
-                        initial="hidden"
-                        animate="visible"
-                    >
-                        {articles.map((article) => (
-                            <ArticleCard key={article.id} article={article} />
-                        ))}
-                    </motion.div>
-                ) : (
-                    <div className="text-center py-8">
-                        <p className="text-gray-500 text-lg">Aucun article disponible pour le moment</p>
+                        <ArticleCard article={article} />
                     </div>
-                )}
-
-                <div className="text-center mt-12">
-                    <Link
-                        href="/blog"
-                        className="inline-flex items-center px-6 py-3 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition-colors"
-                    >
-                        Voir tous les articles
-                    </Link>
-                </div>
+                ))}
             </div>
-        </section>
+
+            {/* Information sur le nombre d'articles */}
+            {articles.length > 0 && (
+                <div className="text-center mt-8 text-sm text-gray-500">
+                    {articles.length === 1 ? (
+                        '1 article affiché'
+                    ) : (
+                        `${articles.length} articles affichés`
+                    )}
+                </div>
+            )}
+        </>
     );
 }

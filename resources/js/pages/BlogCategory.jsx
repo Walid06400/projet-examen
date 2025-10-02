@@ -1,17 +1,23 @@
 // resources/js/pages/BlogCategory.jsx
 import { useState } from "react";
 import { Head, usePage, Link } from "@inertiajs/react";
-import AppLayout from "@/layouts/app-layout";
 import ArticleCard from "@/components/blog/ArticleCard";
+import BlogCategory from "@/components/blog/BlogCategory";
 
-export default function BlogCategory() {
+export default function BlogCategoryPage() {
     const { category, articles, categories } = usePage().props;
 
     return (
-        <AppLayout>
+        <>
             <Head title={`${category.name} - Blog MAOlogie`} />
-            
+
             <div className="container mx-auto py-16 px-4">
+                {/* 📂 COMPOSANT CATÉGORIES */}
+                <BlogCategory
+                    categories={categories}
+                    selectedCategory={category.slug}
+                />
+
                 <div className="text-center mb-12">
                     <h1 className="text-4xl font-bold text-gray-800">
                         Catégorie : {category.name}
@@ -32,30 +38,6 @@ export default function BlogCategory() {
                     <span>{category.name}</span>
                 </div>
 
-                {/* Liste des catégories */}
-                <div className="flex flex-wrap justify-center gap-2 mb-8">
-                    <Link
-                        href={route('blog')}
-                        className="px-4 py-2 rounded-full bg-gray-200 hover:bg-gray-300"
-                    >
-                        Tous
-                    </Link>
-                    
-                    {categories.map((cat) => (
-                        <Link
-                            key={cat.id}
-                            href={route('blog.category', cat.slug)}
-                            className={`px-4 py-2 rounded-full ${
-                                cat.id === category.id
-                                    ? "bg-purple-600 text-white"
-                                    : "bg-gray-200 hover:bg-gray-300"
-                            }`}
-                        >
-                            {cat.name}
-                        </Link>
-                    ))}
-                </div>
-
                 {/* Liste d'articles */}
                 {articles.length === 0 ? (
                     <div className="text-center py-12">
@@ -71,6 +53,6 @@ export default function BlogCategory() {
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }

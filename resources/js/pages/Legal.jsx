@@ -1,16 +1,17 @@
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
-import NavBar from "@/components/NavBar";
-import Footer from "@/components/Footer";
+import NavBar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import AppLayout from "@/layouts/app-layout";
 
 export default function MentionsLegales() {
   return (
-    <>
+    <AppLayout>
       <Head title="Mentions légales" />
 
       <div className="min-h-screen flex flex-col bg-gray-50">
         {/* NavBar top */}
-        <NavBar />
+
 
         {/* Contenu principal */}
         <main className="flex-grow flex items-center justify-center px-4 py-12">
@@ -59,8 +60,8 @@ export default function MentionsLegales() {
         </main>
 
         {/* Footer bottom */}
-        <Footer />
+
       </div>
-    </>
+    </AppLayout>
   );
 }

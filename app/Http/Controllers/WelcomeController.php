@@ -1,10 +1,8 @@
 <?php
-// app/Http/Controllers/WelcomeController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\Article;
-use App\Models\Category;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -12,10 +10,10 @@ class WelcomeController extends Controller
 {
     public function index(): Response
     {
-        // ✅ VRAIES DONNÉES depuis la BDD
+        // VRAIES DONNÉES depuis la BDD
         $featuredArticles = Article::with(['category', 'user'])
-            ->published()
-            ->featured()
+            ->where('status', 'published')
+            ->where('is_featured', true)
             ->latest('published_at')
             ->take(3)
             ->get()
@@ -25,7 +23,7 @@ class WelcomeController extends Controller
                     'title' => $article->title,
                     'slug' => $article->slug,
                     'excerpt' => $article->excerpt,
-                    'image' => $article->image_url, // ✅ Utilise l'accesseur
+                    'image' => $article->image_url,
                     'category' => [
                         'id' => $article->category?->id,
                         'name' => $article->category?->name ?? 'Non catégorisé',
@@ -40,7 +38,7 @@ class WelcomeController extends Controller
             });
 
         $recentArticles = Article::with(['category', 'user'])
-            ->published()
+            ->where('status', 'published')
             ->latest('published_at')
             ->take(6)
             ->get()

@@ -1,5 +1,4 @@
 <?php
-// app/Models/Article.php
 
 namespace App\Models;
 
@@ -34,14 +33,21 @@ class Article extends Model
         'updated_at' => 'datetime',
     ];
 
-    protected $appends = [
-        'image_url',
-        'comments_count',
-    ];
+    // SCOPE pour les articles publiés
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published')
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
+    }
 
-    /**
-     * ✅ RELATIONS
-     */
+    // SCOPE pour les articles à la une
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
+
+    // RELATIONS SÉCURISÉES
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
@@ -54,55 +60,57 @@ class Article extends Model
 
     public function comments(): HasMany
     {
-        return $this->hasMany(\App\Models\Comment::class)->orderBy('created_at', 'desc');
+        return $this->hasMany(Comment::class)->orderBy('created_at', 'desc');
     }
 
-    /**
-     * ✅ SCOPES
-     */
-    public function scopePublished($query)
-    {
-        return $query->where('status', 'published')
-                    ->whereNotNull('published_at');
-    }
-
-    public function scopeFeatured($query)
-    {
-        return $query->where('is_featured', true);
-    }
-
-    /**
-     * ✅ ACCESSEURS
-     */
+    // ACCESSEUR SÉCURISÉ pour l'URL de l'image
     public function getImageUrlAttribute(): string
     {
-        if ($this->image) {
+        if ($this->image && Storage::disk('public')->exists($this->image)) {
             return Storage::url($this->image);
         }
         return '/images/default-article.jpg';
     }
 
+    // ACCESSEUR pour compter les commentaires
     public function getCommentsCountAttribute(): int
     {
         return $this->comments()->count();
     }
 
-    public function getExcerptAttribute($value)
+    // ACCESSEUR pour l'extrait automatique
+    public function getExcerptAttribute($value): string
     {
         if ($value) {
             return $value;
         }
-        return substr(strip_tags($this->content ?? ''), 0, 200) . '...';
+        return Str::limit(strip_tags($this->content ?? ''), 200);
     }
 
-    /**
-     * ✅ MUTATEURS
-     */
-    public function setTitleAttribute($value)
+    // MUTATEUR pour générer le slug automatiquement
+    public function setTitleAttribute($value): void
     {
         $this->attributes['title'] = $value;
         if (empty($this->attributes['slug'])) {
             $this->attributes['slug'] = Str::slug($value);
         }
+    }
+
+    // MUTATEUR pour le slug
+    public function setSlugAttribute($value): void
+    {
+        $this->attributes['slug'] = Str::slug($value);
+    }
+
+    // ACCESSEUR pour l'URL de l'article
+    public function getUrlAttribute(): string
+    {
+        return route('blog.show', $this->slug);
+    }
+
+    // ACCESSEUR pour la description courte
+    public function getShortDescriptionAttribute(): string
+    {
+        return Str::limit(strip_tags($this->content ?? ''), 100);
     }
 }

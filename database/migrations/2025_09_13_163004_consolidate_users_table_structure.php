@@ -1,34 +1,40 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void {
-        Schema::dropIfExists('users');
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
-
-            // Profil MAOlogie
-            $table->string('profile_picture')->nullable();
-            $table->string('avatar')->nullable();
-            $table->text('bio')->nullable();
-            $table->string('location')->nullable();
-            $table->string('website')->nullable();
-
-            // Administration
-            $table->boolean('is_admin')->default(false);
-            $table->enum('status', ['active','banned'])->default('active');
-
-            $table->timestamps();
+    public function up(): void
+    {
+        // Ne pas recréer entièrement, ajouter simplement les colonnes manquantes
+        Schema::table('users', function (Blueprint $table) {
+            if (! Schema::hasColumn('users', 'profile_picture')) {
+                $table->string('profile_picture')->nullable()->after('email');
+            }
+            if (! Schema::hasColumn('users', 'avatar')) {
+                $table->string('avatar')->nullable()->after('profile_picture');
+            }
+            if (! Schema::hasColumn('users', 'bio')) {
+                $table->text('bio')->nullable()->after('avatar');
+            }
+            if (! Schema::hasColumn('users', 'location')) {
+                $table->string('location')->nullable()->after('bio');
+            }
+            if (! Schema::hasColumn('users', 'website')) {
+                $table->string('website')->nullable()->after('location');
+            }
         });
     }
-    public function down(): void {
-        Schema::dropIfExists('users');
+
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            foreach (['website','location','bio','avatar','profile_picture'] as $col) {
+                if (Schema::hasColumn('users', $col)) {
+                    $table->dropColumn($col);
+                }
+            }
+        });
     }
 };

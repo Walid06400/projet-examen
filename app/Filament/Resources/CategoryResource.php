@@ -1,124 +1,108 @@
 <?php
-// app/Filament/Resources/CategoryResource.php - VERSION FINALE MAOlogie DWWM
+// app/Filament/Resources/CategoryResource.php
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
+use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Columns\ImageColumn;
+use App\Filament\Resources\CategoryResource\Pages;
 
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-tag';
-
     protected static ?string $navigationLabel = 'Catégories';
-
-    protected static ?string $modelLabel = 'Catégorie';
-
-    protected static ?string $pluralModelLabel = 'Catégories';
-
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Informations de la catégorie')
-                    ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Nom')
-                            ->required()
-                            ->maxLength(255)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function (string $context, $state, callable $set) {
-                                if ($context === 'create') {
-                                    $set('slug', Str::slug($state));
-                                }
-                            }),
+        return $form->schema([
+            Forms\Components\Section::make('Informations principales')->schema([
+                Forms\Components\TextInput::make('name')
+                    ->label('Nom')
+                    ->required()
+                    ->maxLength(255)
+                    ->live(onBlur: true)
+                    ->afterStateUpdated(fn(string $operation, $state, Forms\Set $set) =>
+                        $operation === 'create' ? $set('slug', \Illuminate\Support\Str::slug($state)) : null
+                    ),
 
-                        Forms\Components\TextInput::make('slug')
-                            ->label('Slug (URL)')
-                            ->required()
-                            ->maxLength(255)
-                            ->unique(Category::class, 'slug', ignoreRecord: true)
-                            ->helperText('Utilisé dans les URLs. Généré automatiquement depuis le nom.'),
+                Forms\Components\TextInput::make('slug')
+                    ->label('Slug')
+                    ->required()
+                    ->maxLength(255)
+                    ->unique(Category::class, 'slug', ignoreRecord: true),
+            ])->columns(2),
 
-                        Forms\Components\Select::make('type')
-                            ->label('Type de catégorie')
-                            ->options([
-                                'article' => '📝 Article de blog',
-                            ])
-                            ->required()
-                            ->default('article')
-                            ->helperText('🚫 Formations supprimées - Blog MAO uniquement'),
+            Forms\Components\Section::make('Description et Médias')->schema([
+                Forms\Components\Textarea::make('description')
+                    ->label('Description')
+                    ->maxLength(1000)
+                    ->rows(3),
 
-                        Forms\Components\Textarea::make('description')
-                            ->label('Description')
-                            ->rows(3)
-                            ->maxLength(1000)
-                            ->helperText('Description optionnelle de la catégorie MAO'),
-                    ]),
-            ]);
+                // ✅ UPLOAD CORRIGÉ
+                FileUpload::make('image')
+                    ->label('Image de catégorie')
+                    ->image()
+                    ->directory('categories')
+                    ->disk('public')  // ✅ Disk public explicite
+                    ->visibility('public')
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->imageEditor()
+                    ->imageCropAspectRatio('1:1')
+                    ->imageResizeTargetWidth('400')
+                    ->imageResizeTargetHeight('400'),
+
+
+            ])->columns(2),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
+                // ✅ IMAGE COLUMN CORRIGÉE
+                ImageColumn::make('image')
+                    ->label('Image')
+                    ->disk('public')
+                    ->circular()
+                    ->defaultImageUrl(fn($record) => $record->getDefaultImageAttribute())
+                    ->size(60),
+
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nom')
                     ->searchable()
-                    ->sortable()
-                    ->weight('medium'),
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable()
-                    ->copyable()
-                    ->fontFamily('mono')
-                    ->color('gray'),
+                    ->limit(30),
 
-                Tables\Columns\BadgeColumn::make('type')
-                    ->label('Type')
-                    ->colors([
-                        'primary' => 'article',
-                    ])
-                    ->icons([
-                        'heroicon-m-document-text' => 'article',
-                    ]),
+                Tables\Columns\ColorColumn::make('color')
+                    ->label('Couleur'),
 
                 Tables\Columns\TextColumn::make('articles_count')
                     ->label('Articles')
                     ->counts('articles')
                     ->badge()
-                    ->color('success'),
+                    ->color('primary'),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Créée le')
+                    ->label('Créé le')
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Modifiée le')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
-                    ->label('Type')
-                    ->options([
-                        'article' => '📝 Articles',
-                    ]),
+                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -128,7 +112,8 @@ class CategoryResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('name', 'asc');
     }
 
     public static function getPages(): array

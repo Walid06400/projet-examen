@@ -27,6 +27,9 @@ class DatabaseSeeder extends Seeder
 
             // 💬 ÉTAPE 4 : Commentaires communautaires authentiques
             CommentSeeder::class,
+
+            ReactionSeeder::class,
+
         ]);
 
         $this->command->newLine();

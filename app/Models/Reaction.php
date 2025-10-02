@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-
 class Reaction extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'reactable_id',
@@ -15,6 +17,14 @@ class Reaction extends Model
         'type'
     ];
 
+     public const TYPE_LIKE = 'like';
+    public const TYPE_DISLIKE = 'dislike';
+
+    // ✅ CONSTANTES pour affichage (optionnel)
+    public const TYPES = [
+        self::TYPE_LIKE => '👍',
+        self::TYPE_DISLIKE => '👎',
+    ];
     /**
      * Relations
      */
@@ -23,6 +33,9 @@ class Reaction extends Model
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * ✅ RELATION POLYMORPHE - Élément réagi (Comment ou Article)
+     */
     public function reactable(): MorphTo
     {
         return $this->morphTo();
@@ -39,15 +52,7 @@ class Reaction extends Model
     /**
      * Constants pour les types de réactions
      */
-    public const TYPES = [
-        'like' => '👍',
-        'dislike' => '👎',
-        'love' => '❤️',
-        'laugh' => '😂',
-        'wow' => '😮',
-        'sad' => '😢',
-        'angry' => '😡'
-    ];
+
 
     public function getEmojiAttribute(): string
     {

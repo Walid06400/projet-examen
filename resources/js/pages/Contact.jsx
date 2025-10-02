@@ -1,16 +1,17 @@
 import React from "react";
 import { Head, Link } from "@inertiajs/react";
-import NavBar from "@/components/layout/NavBar";
+import NavBar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import AppLayout from "@/layouts/app-layout";
 
 export default function Contact() {
   return (
-    <>
+    <AppLayout>
       <Head title="Contact" />
 
       <div className="min-h-screen flex flex-col bg-gray-50">
         {/* NavBar */}
-        <NavBar />
+
 
         {/* Contenu principal */}
         <main className="flex-grow flex items-center justify-center px-4 py-12">
@@ -54,8 +55,8 @@ export default function Contact() {
         </main>
 
         {/* Footer */}
-        <Footer />
+
       </div>
-    </>
+    </AppLayout>
   );
 }
