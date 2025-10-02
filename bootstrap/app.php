@@ -17,6 +17,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // ✅ CORRECTION CRITIQUE: Enregistrer HandleInertiaRequests
+        $middleware->web(append: [
+            HandleInertiaRequests::class,
+            AddLinkHeadersForPreloadedAssets::class,
+        ]);
+
+        // Alias pour les middlewares personnalisés
         $middleware->alias([
             'admin' => AdminMiddleware::class,
         ]);

@@ -7,6 +7,7 @@ import Input from "@/components/ui/Input";
 import Label from "@/components/ui/Label";
 import SuccessModal from "@/components/ui/SuccessModal";
 import AuthLayout from "@/layouts/auth-layout";
+import AppLayout from "@/layouts/app-layout";
 
 export default function Register() {
   const { data, setData, post, processing, errors, reset } = useForm({
@@ -36,6 +37,7 @@ export default function Register() {
   };
 
   return (
+    <AppLayout>
     <AuthLayout>
       <Head title="Inscription" />
       <SuccessModal open={modal.open} message={modal.message} redirectTo="/blog" />
@@ -105,6 +107,7 @@ export default function Register() {
           </form>
         </div>
       </div>
-    </AuthLayout>
+      </AuthLayout>
+    </AppLayout>
   );
 }

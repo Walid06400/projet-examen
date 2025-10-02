@@ -1,6 +1,6 @@
 
 import  Button  from '@/components/ui/Button';
-import  Separator  from '@/components/ui/separator';
+import  Separator  from '@/components/separator';
 //import  cn  from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 

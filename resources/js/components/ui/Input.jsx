@@ -1,25 +1,37 @@
-import {forwardRef } from 'react';
+import { forwardRef, useEffect } from 'react';
 
 const Input = forwardRef(function Input({
-    type = 'text',
-    className = '',
-    error = false,
-    ...props
+  type = 'text',
+  className = '',
+  error = false,
+  isFocused = false,
+  ...props
 }, ref) {
-    const baseClasses = 'block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-1 sm:text-sm transition-colors duration-200 bg-white text-gray-900';
+  const baseClasses = `
+    block w-full px-3 py-2 border rounded-md shadow-sm
+    placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-1
+    sm:text-sm transition-colors duration-200 bg-white text-gray-900
+  `;
 
-    const errorClasses = error
-        ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-        : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500';
+  const errorClasses = error
+    ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
+    : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500';
 
-    const classes = `${baseClasses} ${errorClasses} ${className}`;
+  const classes = `${baseClasses} ${errorClasses} ${className}`.trim();
 
-    return (
-        <input
-            {...props}
-            type={type}
-            className={classes}
-            ref={ref}
+  // Gérer le focus automatique avec isFocused
+  useEffect(() => {
+    if (isFocused && ref?.current) {
+      ref.current.focus();
+    }
+  }, [isFocused, ref]);
+
+  return (
+    <input
+      {...props}
+      type={type}
+      className={classes}
+      ref={ref}
     />
   );
 });

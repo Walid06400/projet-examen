@@ -3,6 +3,7 @@ import { Head, Link, usePage, useForm, router } from '@inertiajs/react';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import ProfileTab from '@/components/dashboard/ProfileTab';
+import AppLayout from '@/layouts/app-layout';
 import { useState, useRef, useEffect } from 'react';
 import {
   Camera,
@@ -59,21 +60,27 @@ export default function Dashboard() {
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
     const validTypes = ['image/jpeg','image/png','image/jpg','image/gif','image/webp'];
     const maxSize = 5 * 1024 * 1024;
+
     if (!validTypes.includes(file.type)) {
       setMessage({ type: 'error', text: 'Format non supporté.' });
       return;
     }
+
     if (file.size > maxSize) {
       setMessage({ type: 'error', text: 'Max 5MB.' });
       return;
     }
+
     setIsUploadingAvatar(true);
     setMessage(null);
+
     const formData = new FormData();
     formData.append('avatar', file);
-    router.post('/user/avatar/update', formData, {
+
+    router.post('/settings/avatar/update', formData, {
       forceFormData: true,
       preserveScroll: true,
       onSuccess: () => {
@@ -91,19 +98,20 @@ export default function Dashboard() {
 
   if (!auth || !auth.user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-600" />
-        <p className="text-gray-600">Chargement...</p>
-      </div>
+      <AppLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-600" />
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </AppLayout>
     );
   }
 
   return (
-    <>
+    <AppLayout>
       <Head title="Dashboard - MAOlogie" />
 
       <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
@@ -129,49 +137,9 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Profile & Avatar */}
+        {/* Profile Section avec ProfileTab uniquement */}
         <div className="bg-white shadow-xl rounded-2xl p-8 mb-8 border border-gray-100">
-          <div className="flex flex-col lg:flex-row items-center space-y-6 lg:space-y-0 lg:space-x-8">
-            <div className="relative group">
-              <img
-                src={auth.user.avatar_url}
-                alt={`Avatar de ${auth.user.name}`}
-                className="w-36 h-36 rounded-full object-cover border-4 border-purple-600 shadow-lg transition-all duration-300 group-hover:shadow-xl"
-              />
-              <label
-                htmlFor="avatar-upload"
-                className={`absolute bottom-0 right-0 p-3 rounded-full cursor-pointer transition-all duration-200 shadow-lg ${
-                  isUploadingAvatar
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-purple-600 hover:bg-purple-700 hover:scale-110'
-                } text-white`}
-                title={isUploadingAvatar ? 'Upload...' : 'Changer l\'avatar'}
-              >
-                {isUploadingAvatar ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Camera className="w-5 h-5" />
-                )}
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  disabled={isUploadingAvatar}
-                  className="hidden"
-                  ref={fileInputRef}
-                />
-              </label>
-              <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
-                <span className="text-xs bg-gray-800 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  300x300px • Max 5MB
-                </span>
-              </div>
-            </div>
-
-            {/* ProfileTab avec bio & localisation */}
-            <ProfileTab/>
-          </div>
+          <ProfileTab />
         </div>
 
         {/* Stats cards */}
@@ -221,6 +189,6 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-    </>
+    </AppLayout>
   );
 }

@@ -1,12 +1,13 @@
 
 import { Head, Link, usePage } from '@inertiajs/react';
 import ArticleCard from '@/components/blog/ArticleCard';
+import AppLayout from '@/layouts/app-layout';
 
 export default function Blog() {
     const { articles, categories, selectedCategory } = usePage().props;
 
     return (
-        <>
+        <AppLayout>
             <Head title="Blog MAOlogie" />
 
             {/* Header du blog - SANS navbar supplémentaire */}
@@ -126,6 +127,6 @@ export default function Blog() {
                     )}
                 </div>
             </div>
-        </>
+        </AppLayout>
     );
 }

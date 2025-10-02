@@ -86,6 +86,31 @@ class ProfileController extends Controller
         }
     }
 
+    /**
+ * Met à jour l’avatar de l’utilisateur.
+ */
+public function updateAvatar(Request $request)
+{
+    $request->validate([
+        'avatar' => ['required', 'image', 'max:2048'],
+    ]);
+
+    $user = $request->user();
+
+    // Supprimer l’ancien avatar si existant
+    if ($user->avatar_path) {
+        Storage::disk('public')->delete($user->avatar_path);
+    }
+
+    // Stocker le nouveau fichier
+    $path = $request->file('avatar')->store('avatars', 'public');
+    $user->avatar_path = $path;
+    $user->save();
+
+    return back()->with('status', 'Avatar mis à jour avec succès.');
+}
+
+
     public function destroy(Request $request): RedirectResponse
     {
         $request->validate(['password' => 'required|current_password']);
